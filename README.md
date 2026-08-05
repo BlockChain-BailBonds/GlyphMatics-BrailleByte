@@ -45,6 +45,41 @@ python -m braillebyte.cli encode 'بقرة agua'
 
 The first command reports resolved concepts, ambiguous alternatives, and unknown forms. For example, `vaca` and `牛` both resolve to `SEM:ANIMAL:COW`; `bank` remains ambiguous; and `quasar` is retained literally.
 
+## Universal semantic-language usage
+
+BrailleByte is universal at the **semantic transport** layer. It is not a new spoken language and it does not assume that source-language word order is the target-language word order.
+
+```text
+source text, speech, or glyphs
+        ↓
+candidate concepts and senses
+        ↓
+canonical role-labelled semantic graph
+        ↓
+BrailleByte 8-bit cell stream
+        ↓
+target-language text, speech, tactile cells, visual glyphs, or machine action
+```
+
+For example, these surface forms can share one immutable concept:
+
+```text
+cow / vaca / vache / корова / بقرة / गाय / 牛
+                         ↓
+                   SEM:ANIMAL:COW
+```
+
+Semantic roles are explicit, so a receiver can realize the graph in its own language:
+
+```text
+ACTION: GIVE
+AGENT: PERSON_A
+PATIENT: OBJECT
+DESTINATION: PERSON_B
+```
+
+The receiver may choose a language-appropriate order without changing the semantic graph. When a form is unknown or has multiple senses, the protocol preserves the original form and candidate alternatives rather than inventing a universal meaning. A production implementation still needs language recognition, word-sense disambiguation, cultural context, vocabulary governance, and target-language generation.
+
 ## Encoding model
 
 A BrailleByte message is a sequence of one-byte tokens displayed with Unicode Braille patterns U+2800..U+28FF.
