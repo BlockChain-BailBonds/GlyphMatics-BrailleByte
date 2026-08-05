@@ -1,0 +1,36 @@
+{
+  "input": "data/system_sentence_corpus.jsonl",
+  "input_bytes": 20745,
+  "input_sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539",
+  "results": [
+    {
+      "name": "gzip",
+      "bytes": 662,
+      "ratio": 31.3369,
+      "encode_seconds": 0.000188,
+      "decode_seconds": 4.2e-05,
+      "sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539",
+      "exact": true
+    },
+    {
+      "name": "bz2",
+      "bytes": 722,
+      "ratio": 28.7327,
+      "encode_seconds": 0.001832,
+      "decode_seconds": 0.000193,
+      "sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539",
+      "exact": true
+    },
+    {
+      "name": "lzma",
+      "bytes": 652,
+      "ratio": 31.8175,
+      "encode_seconds": 0.007222,
+      "decode_seconds": 6.8e-05,
+      "sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539",
+      "exact": true
+    }
+  ],
+  "sota_claim": false,
+  "rule": "No SOTA claim is permitted until an independently reproducible benchmark beats a named baseline."
+}

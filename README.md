@@ -29,6 +29,12 @@ BrailleByte is a semantic transport prototype, not a replacement for multilingua
 
 This project does not claim arbitrary repository collapse, universal natural-language understanding, or universal human adoption. Its supported claims are deterministic byte/cell/speech round trips, lossless preservation of unknown forms, explicit ambiguity, registered-concept semantic graphs, and tested compression for its supplied corpus. `scripts/verify_glyphmatics_bridge.py` verifies a real GlyphMatics vocabulary's lossless glyph and binary round trips beside the same input's BrailleByte semantic transport.
 
+Run the baseline gate before any compression claim:
+
+```bash
+python scripts/benchmark_gate.py --input data/system_sentence_corpus.jsonl
+```
+
 ## Quick start
 
 ```bash
