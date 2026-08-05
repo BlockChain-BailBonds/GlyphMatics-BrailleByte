@@ -1,0 +1,105 @@
+{
+  "format": "braillebyte-four-graph-chunk-index-v1",
+  "model_id": "example-30b-layout-not-weights",
+  "sections": {
+    "vocabulary": 224,
+    "architecture": 225,
+    "chunk": 226,
+    "integrity": 227
+  },
+  "chunks": [
+    {
+      "chunk_id": "embed-0",
+      "uri": "chunks/embed-0.zst",
+      "offset": 0,
+      "length": 1073741824,
+      "sha256": "841a1bb58bd350d07733988881bb70ef65b9d0654518b8dfaec9de49bbe5a900",
+      "codec": "zstd"
+    },
+    {
+      "chunk_id": "embed-1",
+      "uri": "chunks/embed-1.zst",
+      "offset": 1073741824,
+      "length": 1073741824,
+      "sha256": "1167497cb8ac94d8bd1d4e8e1fa18246c655a0e9293aafbee08ce3a9feeb0a85",
+      "codec": "zstd"
+    },
+    {
+      "chunk_id": "output-0",
+      "uri": "chunks/output-0.zst",
+      "offset": 2147483648,
+      "length": 1073741824,
+      "sha256": "4143733111bedd9f2b5acfe2191f6c120ee4e7b12133c559808213cc9c9e528f",
+      "codec": "zstd"
+    },
+    {
+      "chunk_id": "output-1",
+      "uri": "chunks/output-1.zst",
+      "offset": 3221225472,
+      "length": 1073741824,
+      "sha256": "d34101e3f3693b2efd9e0c91adee0552c8719ecdacb7093698c9e56bdb9bbb2b",
+      "codec": "zstd"
+    },
+    {
+      "chunk_id": "layer-0-attention",
+      "uri": "chunks/layer-0-attention.zst",
+      "offset": 4294967296,
+      "length": 1073741824,
+      "sha256": "d72920c0e50b00d672e19c59cb90648da8cd8a69bce772739480e7b674780053",
+      "codec": "zstd"
+    },
+    {
+      "chunk_id": "layer-0-mlp",
+      "uri": "chunks/layer-0-mlp.zst",
+      "offset": 5368709120,
+      "length": 1073741824,
+      "sha256": "ca853cfd3b43c1d8424d11da6480be3a4fface465803d87393ac31b22e366239",
+      "codec": "zstd"
+    }
+  ],
+  "vocabulary": [
+    {
+      "start_token_id": 0,
+      "end_token_id": 31999,
+      "embedding_chunk_id": "embed-0",
+      "output_chunk_id": "output-0"
+    },
+    {
+      "start_token_id": 32000,
+      "end_token_id": 63999,
+      "embedding_chunk_id": "embed-1",
+      "output_chunk_id": "output-1"
+    }
+  ],
+  "tensors": [
+    {
+      "layer": 0,
+      "component": "attention",
+      "chunk_ids": [
+        "layer-0-attention"
+      ]
+    },
+    {
+      "layer": 0,
+      "component": "mlp",
+      "chunk_ids": [
+        "layer-0-mlp"
+      ]
+    }
+  ],
+  "example_only": true,
+  "example_payload_hash_note": "Hashes validate deterministic example payload labels, not model weights.",
+  "sample_token_route": [
+    224,
+    0,
+    1,
+    225,
+    0,
+    226,
+    0,
+    1,
+    227,
+    0,
+    1
+  ]
+}

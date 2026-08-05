@@ -113,12 +113,33 @@ Training writes these reproducible artifacts:
 - `data/system_compression_model.json`: learned byte-phrase dictionary.
 - `data/system_compression_report.json`: held-out compression and exact-round-trip result.
 
+## Four-graph chunk retrieval
+
+`braillebyte/glyph_index.py` implements the enhancement layer for a future chunked model store. It uses four 8-bit BrailleByte graph-section markers:
+
+```text
+vocabulary graph   token ID → embedding/output shard
+architecture graph model layer + component → tensor chunk(s)
+chunk graph        chunk ID → URI + byte offset + length + codec
+integrity graph    chunk ID → SHA-256 verification
+```
+
+Use it to create or inspect a manifest:
+
+```bash
+python scripts/build_chunk_graph_example.py
+python -m unittest discover -s tests -v
+```
+
+The generated `data/four_graph_chunk_index.example.json` is a validated layout example only; it contains no model weights. A real 30B deployment must generate chunk hashes from the actual GGUF or safetensors payload and provide the matching model architecture and tokenizer metadata.
+
 ## Project layout
 
 ```text
 braillebyte/codec.py          text, concepts, Braille cells, and protocol bytes
 braillebyte/semantic.py       versioned concept registry and multilingual segmentation
 braillebyte/compression.py    lossless trained byte-phrase compressor
+braillebyte/glyph_index.py    four-graph token and tensor chunk routing
 data/concepts.json            governed concept records and multilingual forms
 scripts/train_system_compression.py
 tests/                        codec and exact-round-trip validation
