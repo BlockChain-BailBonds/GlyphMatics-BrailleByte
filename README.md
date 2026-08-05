@@ -93,6 +93,10 @@ python -m braillebyte.cli speak '⠁⡁⢀⠂'
 python -m braillebyte.cli hear 'braillebyte ka / ka-ri / va / ta end'
 ```
 
+### BrailleByte Spoken
+
+BrailleByte Spoken is the project’s constructed semantic spoken language. Its first grammar is canonical agent-action-patient: `maku nari savi` means `cow eats food` and parses to the same `SemanticGraph` used by the byte protocol. See [`docs/BRAILLEBYTE_SPOKEN.md`](docs/BRAILLEBYTE_SPOKEN.md). It is a functioning designed language layer, not a claim of universal natural-language adoption.
+
 ## Encoding model
 
 A BrailleByte message is a sequence of one-byte tokens displayed with Unicode Braille patterns U+2800..U+28FF.
