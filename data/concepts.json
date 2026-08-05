@@ -1,0 +1,94 @@
+{
+  "version": "0.3.0",
+  "concepts": [
+    {
+      "id": 1,
+      "identity": "SEM:ANIMAL:COW",
+      "gloss": "domesticated bovine animal",
+      "bytes": [65, 128],
+      "forms": ["cow", "cows", "vaca", "vacas", "vache", "kuh", "mucca", "vaca", "koe", "krava", "корова", "بقرة", "بقر", "गाय", "গরু", "牛"]
+    },
+    {
+      "id": 2,
+      "identity": "SEM:ANIMAL:DOG",
+      "gloss": "domesticated canine animal",
+      "bytes": [65, 129],
+      "forms": ["dog", "dogs", "perro", "perros", "chien", "hund", "cane", "hond", "собака", "كلب", "कुत्ता", "কুকুর", "犬"]
+    },
+    {
+      "id": 3,
+      "identity": "SEM:ANIMAL:CAT",
+      "gloss": "domesticated feline animal",
+      "bytes": [65, 130],
+      "forms": ["cat", "cats", "gato", "gatos", "chat", "katze", "gatto", "kat", "кошка", "قطة", "बिल्ली", "বিড়াল", "猫"]
+    },
+    {
+      "id": 4,
+      "identity": "SEM:ACTION:GO",
+      "gloss": "move or travel",
+      "bytes": [144],
+      "forms": ["go", "goes", "went", "ir", "va", "fue", "aller", "vais", "gehen", "ging", "andare", "gaan", "идти", "шел", "ذهب", "يذهب", "जाना", "যাওয়া", "行く", "行った", "去"]
+    },
+    {
+      "id": 5,
+      "identity": "SEM:SUBSTANCE:WATER",
+      "gloss": "liquid water",
+      "bytes": [67],
+      "forms": ["water", "agua", "eau", "wasser", "acqua", "water", "вода", "ماء", "पानी", "পানি", "水"]
+    },
+    {
+      "id": 6,
+      "identity": "SEM:ACTION:EAT",
+      "gloss": "consume food",
+      "bytes": [147],
+      "forms": ["eat", "eats", "ate", "comer", "come", "manger", "mange", "essen", "aß", "mangiare", "eten", "есть", "ел", "أكل", "يأكل", "खाना", "খাওয়া", "食べる", "食べた", "吃"]
+    },
+    {
+      "id": 101,
+      "identity": "SEM:INSTITUTION:FINANCIAL_BANK",
+      "gloss": "financial institution",
+      "forms": ["bank"]
+    },
+    {
+      "id": 102,
+      "identity": "SEM:GEOGRAPHY:RIVER_BANK",
+      "gloss": "land beside a river or other watercourse",
+      "forms": ["bank"]
+    },
+    {
+      "id": 7,
+      "identity": "SEM:ENTITY:PERSON",
+      "gloss": "human being",
+      "bytes": [66],
+      "forms": ["person", "people", "persona", "personne", "mensch", "persona", "persoon", "человек", "شخص", "व्यक्ति", "মানুষ", "人"]
+    },
+    {
+      "id": 8,
+      "identity": "SEM:SUBSTANCE:FOOD",
+      "gloss": "edible nourishment",
+      "bytes": [69],
+      "forms": ["food", "comida", "nourriture", "essen", "cibo", "eten", "еда", "طعام", "भोजन", "খাবার", "食べ物"]
+    },
+    {
+      "id": 9,
+      "identity": "SEM:PLACE:HOME",
+      "gloss": "dwelling or place of residence",
+      "bytes": [70],
+      "forms": ["home", "house", "casa", "maison", "haus", "casa", "huis", "дом", "منزل", "घर", "বাড়ি", "家"]
+    },
+    {
+      "id": 10,
+      "identity": "SEM:PHENOMENON:FIRE",
+      "gloss": "combustion and flame",
+      "bytes": [68],
+      "forms": ["fire", "fuego", "feu", "feuer", "fuoco", "vuur", "огонь", "نار", "आग", "আগুন", "火"]
+    },
+    {
+      "id": 11,
+      "identity": "SEM:CELESTIAL:SUN",
+      "gloss": "the local star",
+      "bytes": [74],
+      "forms": ["sun", "sol", "soleil", "sonne", "sole", "zon", "солнце", "شمس", "सूरज", "সূর্য", "太陽"]
+    }
+  ]
+}

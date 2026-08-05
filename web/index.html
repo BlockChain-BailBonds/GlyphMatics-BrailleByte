@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GlyphMatics BrailleByte</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    body { margin: 0; background:#0b1020; color:#edf2ff; }
+    main { max-width:1100px; margin:auto; padding:24px; }
+    textarea, button { font:inherit; }
+    textarea { width:100%; min-height:100px; box-sizing:border-box; border:1px solid #36415f; border-radius:12px; padding:14px; background:#11182b; color:#fff; }
+    button { border:0; border-radius:10px; padding:10px 16px; background:#7c9cff; color:#071022; font-weight:700; cursor:pointer; }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:14px 0; }
+    .panel { border:1px solid #2b3551; border-radius:16px; padding:16px; background:#10172a; margin-top:16px; }
+    .braille { font-size:42px; letter-spacing:6px; overflow-wrap:anywhere; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border-bottom:1px solid #29324a; padding:9px; text-align:left; vertical-align:top; }
+    code { color:#b9c9ff; }
+    .muted { color:#9eabc9; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>GlyphMatics BrailleByte</h1>
+  <p class="muted">Designed semantic vocabulary encoded as sequences of 8-dot Braille cells, with a deterministic spoken dot form.</p>
+  <label for="input">Text</label>
+  <textarea id="input">the cow goes moo</textarea>
+  <div class="row"><button id="encode">Encode</button><button id="speak">Speak dot names</button></div>
+  <section class="panel">
+    <h2>BrailleByte sequence</h2>
+    <div id="braille" class="braille"></div>
+    <p><strong>Bytes:</strong> <code id="bytes"></code></p>
+    <p><strong>Dot speech:</strong> <span id="speech"></span></p>
+  </section>
+  <section class="panel">
+    <h2>Token trace</h2>
+    <div style="overflow:auto"><table><thead><tr><th>#</th><th>Cell</th><th>Hex</th><th>Token</th><th>Meaning</th><th>Spoken</th></tr></thead><tbody id="trace"></tbody></table></div>
+  </section>
+</main>
+<script>
+const DOT = {1:'ka',2:'ta',3:'mi',4:'no',5:'se',6:'lu',7:'ri',8:'va'};
+const TOKENS = {
+  1:['START','start of semantic message'],2:['END','end of semantic message'],32:['AGENT','actor or subject'],33:['ACTION','action or predicate'],35:['SOUND_OF','characteristic sound relation'],38:['TENSE_PRESENT','present or generic tense'],41:['DEFINITE','definite reference'],65:['ANIMAL','living nonhuman animal'],128:['COW','domesticated bovine animal'],146:['MAKE_SOUND','produce a characteristic sound'],192:['SOUND_MOO','cow vocalization moo'],4:['UNKNOWN','unknown concept']
+};
+const PATTERNS = {'the cow goes moo':[1,32,41,65,128,33,38,146,35,192,2],'a cow goes moo':[1,32,65,128,33,38,146,35,192,2]};
+function normalize(s){return s.toLowerCase().replace(/[^\p{L}\p{N}\s'-]/gu,' ').replace(/\s+/g,' ').trim();}
+function spokenByte(v){const s=[];for(let i=1;i<=8;i++)if(v&(1<<(i-1)))s.push(DOT[i]);return s.length?s.join('-'):'blank';}
+function encode(){const text=normalize(document.querySelector('#input').value);const values=PATTERNS[text]||[1,4,2];const cells=values.map(v=>String.fromCodePoint(0x2800+v));document.querySelector('#braille').textContent=cells.join('');document.querySelector('#bytes').textContent=values.map(v=>v.toString(16).padStart(2,'0').toUpperCase()).join(' ');document.querySelector('#speech').textContent=values.map(spokenByte).join(' | ');document.querySelector('#trace').innerHTML=values.map((v,i)=>{const t=TOKENS[v]||[`BYTE_${v}`,'unassigned'];return `<tr><td>${i}</td><td style="font-size:28px">${cells[i]}</td><td>0x${v.toString(16).padStart(2,'0').toUpperCase()}</td><td>${t[0]}</td><td>${t[1]}</td><td>${spokenByte(v)}</td></tr>`}).join('');return values.map(spokenByte).join(', ');}
+document.querySelector('#encode').addEventListener('click',encode);
+document.querySelector('#speak').addEventListener('click',()=>{const utterance=new SpeechSynthesisUtterance(encode());speechSynthesis.cancel();speechSynthesis.speak(utterance);});
+encode();
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+# GlyphMatics BrailleByte
+
+BrailleByte is an experimental semantic codec that represents designed vocabulary as sequences of Unicode 8-dot Braille cells. Each cell corresponds to one byte. The system separates:
+
+- surface text
+- normalized concepts
+- semantic relations
+- byte sequences
+- Braille cells
+- spoken dot names
+
+## What it does
+
+- Resolves registered surface forms from multiple languages to stable semantic concepts.
+- Emits each semantic message as 8-dot Braille cells, ordinary bytes, and speakable dot names.
+- Preserves unknown forms as reversible UTF-8 literals instead of replacing them with a guessed meaning.
+- Preserves ambiguous forms as multiple candidate concepts; it does not silently choose a sense.
+- Trains a lossless byte-phrase dictionary for repeated complete-system semantic messages.
+
+## What it can do today
+
+The included concept registry covers a deliberately small semantic vocabulary across English, Spanish, French, German, Italian, Dutch, Russian, Arabic, Hindi, Bengali, Japanese, and Chinese. It supports unspaced CJK terms registered in the concept graph.
+
+The system-stream trainer generates complete-system messages with explicit component clauses for controller, network, storage, security, power, and telemetry. It trains only on canonical 8-bit BrailleByte semantic streams and verifies byte-for-byte recovery on held-out messages.
+
+BrailleByte is a semantic transport prototype, not a replacement for multilingual speech recognition, production-grade word-sense disambiguation, or a model-weight compression format. The trained phrase dictionary compresses repeated semantic protocol structure; it does not reduce arbitrary neural-weight tensors by itself.
+
+## Quick start
+
+```bash
+python -m braillebyte.cli encode "the cow goes moo"
+python -m braillebyte.cli decode "⣿⢀⡁⡂⡃⡄⡅"
+python -m braillebyte.cli explain "the cow goes moo"
+python -m unittest discover -s tests -v
+```
+
+Open `web/index.html` in a browser for the local demo.
+
+### Multilingual interpretation
+
+```bash
+python -m braillebyte.cli explain 'vaca 牛 bank quasar'
+python -m braillebyte.cli encode 'بقرة agua'
+```
+
+The first command reports resolved concepts, ambiguous alternatives, and unknown forms. For example, `vaca` and `牛` both resolve to `SEM:ANIMAL:COW`; `bank` remains ambiguous; and `quasar` is retained literally.
+
+## Encoding model
+
+A BrailleByte message is a sequence of one-byte tokens displayed with Unicode Braille patterns U+2800..U+28FF.
+
+Namespaces:
+
+- `0x00-0x1F`: framing and control
+- `0x20-0x3F`: grammar and relations
+- `0x40-0x7F`: semantic primitives
+- `0x80-0xBF`: entities and actions
+- `0xC0-0xDF`: attributes, sound and modifiers
+- `0xE0-0xEF`: dictionary references
+- `0xF0-0xFF`: extension and literal escape
+
+This repository ships with a versioned multilingual concept registry. Surface forms such as `cow`, `vaca`, `vache`, `корова`, `بقرة`, `गाय`, and `牛` resolve to `SEM:ANIMAL:COW` and therefore emit the same semantic bytes. The included registry covers English, Spanish, French, German, Italian, Dutch, Russian, Arabic, Hindi, Bengali, and Japanese/Chinese forms for its current concepts. It also segments registered unspaced CJK forms, so `牛吃水` resolves as cow → eat → water. An ambiguous form, such as `bank`, stays ambiguous and is encoded with `UNKNOWN` plus a reversible UTF-8 literal; it is never silently assigned a meaning. Unknown forms receive the same lossless fallback.
+
+`data/concepts.json` is the governed concept registry. Each concept has an immutable identity, optional compact byte representation, and multilingual surface forms. Concepts without compact bytes use `EXTENSION` followed by a varuint concept ID.
+
+## Trained 8-bit system-stream compression
+
+`scripts/train_system_compression.py` trains a lossless phrase dictionary on complete-system semantic sentences, then validates it on held-out systems. The training corpus encodes each sentence as canonical 8-bit BrailleByte cells: role bytes, extension concept IDs, component clauses, and framing—not UTF-8 prose. The learned model replaces only repeated byte phrases and every compressed stream must expand byte-for-byte to its canonical semantic stream.
+
+```bash
+python scripts/train_system_compression.py
+python -m unittest discover -s tests -v
+```
+
+Training writes these reproducible artifacts:
+
+- `data/system_sentence_corpus.jsonl`: canonical complete-system byte streams.
+- `data/system_compression_model.json`: learned byte-phrase dictionary.
+- `data/system_compression_report.json`: held-out compression and exact-round-trip result.
+
+## Project layout
+
+```text
+braillebyte/codec.py          text, concepts, Braille cells, and protocol bytes
+braillebyte/semantic.py       versioned concept registry and multilingual segmentation
+braillebyte/compression.py    lossless trained byte-phrase compressor
+data/concepts.json            governed concept records and multilingual forms
+scripts/train_system_compression.py
+tests/                        codec and exact-round-trip validation
+```

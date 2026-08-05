@@ -1,0 +1,9 @@
+{
+  "training_sentences": 21,
+  "held_out_complete_system_sentences": 6,
+  "learned_phrases": 127,
+  "held_out_canonical_bytes": 660,
+  "held_out_compressed_bytes": 180,
+  "reduction_percent": 72.73,
+  "exact_round_trip": true
+}
