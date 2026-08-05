@@ -97,6 +97,25 @@ class BrailleByteCompressor:
                 cursor += 1
         return tuple(result)
 
+    @staticmethod
+    def _cells(values: Sequence[int]) -> str:
+        return ''.join(chr(0x2800 + int(value)) for value in values)
+
+    @staticmethod
+    def _bytes(cells: str) -> tuple[int, ...]:
+        values = tuple(ord(cell) - 0x2800 for cell in cells)
+        if any(value < 0 or value > 255 for value in values):
+            raise ValueError('compressed transport must contain only 8-dot Braille cells')
+        return values
+
+    def compress_to_braille(self, stream: Sequence[int]) -> str:
+        """Losslessly compress a byte stream into an 8-dot-Braille-only payload."""
+        return self._cells(self.compress(stream))
+
+    def decompress_braille(self, cells: str) -> tuple[int, ...]:
+        """Recover the exact original bytes from an 8-dot-Braille-only payload."""
+        return self.decompress(self._bytes(cells))
+
     def to_dict(self) -> dict[str, object]:
         return {
             'format': 'braillebyte-trained-phrase-compressor-v1',

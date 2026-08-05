@@ -125,6 +125,8 @@ This repository ships with a versioned multilingual concept registry. Surface fo
 
 `scripts/train_system_compression.py` trains a lossless phrase dictionary on complete-system semantic sentences, then validates it on held-out systems. The training corpus encodes each sentence as canonical 8-bit BrailleByte cells: role bytes, extension concept IDs, component clauses, and framing—not UTF-8 prose. The learned model replaces only repeated byte phrases and every compressed stream must expand byte-for-byte to its canonical semantic stream.
 
+The compressed payload itself can be emitted as **only 8-dot Braille cells** through `compress_to_braille()` and recovered with `decompress_braille()`. No ASCII, Base64, or conventional codec bytes are needed inside that transport payload.
+
 ```bash
 python scripts/train_system_compression.py
 python -m unittest discover -s tests -v
