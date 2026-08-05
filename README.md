@@ -78,7 +78,16 @@ PATIENT: OBJECT
 DESTINATION: PERSON_B
 ```
 
-The receiver may choose a language-appropriate order without changing the semantic graph. When a form is unknown or has multiple senses, the protocol preserves the original form and candidate alternatives rather than inventing a universal meaning. A production implementation still needs language recognition, word-sense disambiguation, cultural context, vocabulary governance, and target-language generation.
+The receiver may choose a language-appropriate order without changing the semantic graph. When a form is unknown or has multiple senses, the protocol preserves the original form and candidate alternatives rather than inventing a universal meaning. `SemanticGraphCodec` now provides deterministic role-graph frames, and `realize()` supplies controlled `en`, `es`, and `zh-Hans` output for registered graphs. A production implementation still needs independently evaluated language recognition, word-sense disambiguation, cultural context, vocabulary governance, and broad target-language generation.
+
+### Spoken protocol layer
+
+Every cell now has a deterministic spoken form. A message is framed as `braillebyte <cell> / <cell> end`; dots are named by their fixed syllables, and `/` is a mandatory cell boundary. This is byte-recoverable speech, not a claim that every listener already understands the semantics.
+
+```bash
+python -m braillebyte.cli speak '⠁⡁⢀⠂'
+python -m braillebyte.cli hear 'braillebyte ka / ka-ri / va / ta end'
+```
 
 ## Encoding model
 

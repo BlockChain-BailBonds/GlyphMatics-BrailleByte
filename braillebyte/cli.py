@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from .codec import BrailleByteCodec
+from .spoken import SpokenBrailleByte
 
 
 def main() -> None:
@@ -20,9 +21,14 @@ def main() -> None:
 
     dictionary_parser = sub.add_parser("dictionary", help="print the token dictionary")
     dictionary_parser.add_argument("--kind", default=None)
+    speak_parser = sub.add_parser('speak', help='render Braille cells as framed deterministic speech')
+    speak_parser.add_argument('braille')
+    hear_parser = sub.add_parser('hear', help='parse framed deterministic speech into Braille cells')
+    hear_parser.add_argument('utterance')
 
     args = parser.parse_args()
     codec = BrailleByteCodec()
+    spoken = SpokenBrailleByte(codec.dot_syllables)
 
     if args.command == "encode":
         result = codec.encode(args.text)
@@ -61,6 +67,10 @@ def main() -> None:
     elif args.command == "dictionary":
         rows = [token.__dict__ for token in codec.tokens_by_byte.values() if args.kind is None or token.kind == args.kind]
         print(json.dumps(rows, indent=2, ensure_ascii=False))
+    elif args.command == 'speak':
+        print(spoken.speak(codec.braille_to_bytes(args.braille)))
+    elif args.command == 'hear':
+        print(codec.bytes_to_braille(spoken.hear(args.utterance)))
 
 
 if __name__ == "__main__":
