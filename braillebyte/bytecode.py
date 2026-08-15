@@ -27,6 +27,8 @@ OPCODE_TABLE = {
     "STATE": 0x38,
     "UNKNOWN": 0x3F,
 }
+OPCODE_BACK = {value: key for key, value in OPCODE_TABLE.items()}
+TEXT_FALLBACK = 0xFF
 
 
 @dataclass
@@ -43,10 +45,10 @@ class SemanticBytecode:
             op = inst.get("op", "UNKNOWN")
             out.append(self.opcode_table.get(op, self.opcode_table["UNKNOWN"]) & 0xFF)
             if op == "PAIR":
-                self._write_text(out, inst.get("role", ""))
+                self._write_symbol(out, inst.get("role", ""))
                 self._write_text(out, inst.get("concept_id", ""))
             elif op in {"BEGIN", "END"}:
-                self._write_text(out, inst.get("kind", ""))
+                self._write_symbol(out, inst.get("kind", ""))
                 if op == "BEGIN":
                     self._write_text(out, inst.get("label", ""))
             else:
@@ -68,18 +70,18 @@ class SemanticBytecode:
             pos += 1
             op = reverse.get(opcode, "UNKNOWN")
             if op == "PAIR":
-                role, pos = self._read_text(data, pos)
+                role, pos = self._read_symbol(data, pos)
                 concept_id, pos = self._read_text(data, pos)
                 instructions.append({"op": "PAIR", "role": role, "concept_id": concept_id})
             elif op == "BEGIN":
-                kind, pos = self._read_text(data, pos)
+                kind, pos = self._read_symbol(data, pos)
                 label, pos = self._read_text(data, pos)
                 item = {"op": "BEGIN", "kind": kind}
                 if label:
                     item["label"] = label
                 instructions.append(item)
             elif op == "END":
-                kind, pos = self._read_text(data, pos)
+                kind, pos = self._read_symbol(data, pos)
                 instructions.append({"op": "END", "kind": kind})
             else:
                 blob, pos = self._read_text(data, pos)
@@ -93,11 +95,26 @@ class SemanticBytecode:
         out.append(len(data))
         out.extend(data)
 
+    def _write_symbol(self, out: bytearray, text: str) -> None:
+        opcode = self.opcode_table.get(text)
+        if opcode is not None:
+            out.append(opcode & 0xFF)
+            return
+        out.append(TEXT_FALLBACK)
+        self._write_text(out, text)
+
     def _read_text(self, data: bytes, pos: int) -> tuple[str, int]:
         length = data[pos]
         pos += 1
         text = data[pos:pos + length].decode("utf-8")
         return text, pos + length
+
+    def _read_symbol(self, data: bytes, pos: int) -> tuple[str, int]:
+        tag = data[pos]
+        pos += 1
+        if tag == TEXT_FALLBACK:
+            return self._read_text(data, pos)
+        return OPCODE_BACK.get(tag, "UNKNOWN"), pos
 
     def encode_pairs(self, pairs: list[tuple[str, str]]) -> list[dict[str, Any]]:
         return [{"op": "PAIR", "role": role, "concept_id": concept_id} for role, concept_id in pairs]

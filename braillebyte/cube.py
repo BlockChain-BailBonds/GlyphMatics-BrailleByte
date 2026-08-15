@@ -5,9 +5,6 @@ from typing import Any
 
 
 FACE_ORDER = ("front", "right", "left", "top", "bottom", "back")
-# Wire tags stay byte-sized so the cube payload stays compact and reversible.
-FACE_TAGS = {face: index for index, face in enumerate(FACE_ORDER)}
-FACE_BACK = {value: key for key, value in FACE_TAGS.items()}
 FRAME_KEYS = {
     "role": 0x11,
     "domain": 0x10,
@@ -83,7 +80,6 @@ class GlyphCube:
         out = bytearray()
         out.extend(b"GCB1")
         for face in FACE_ORDER:
-            out.append(FACE_TAGS[face] & 0xFF)
             payload = self.faces[face].payload
             frame = self._encode_frame(self.faces[face].semantic_frame)
             out.extend(self._pack_u16(len(payload)))
@@ -102,10 +98,6 @@ class GlyphCube:
         pos = 4
         faces: dict[str, GlyphCubeFace] = {}
         for face in FACE_ORDER:
-            face_tag = data[pos]
-            pos += 1
-            if FACE_BACK.get(face_tag) != face:
-                raise ValueError("cube face order mismatch")
             payload_len = int.from_bytes(data[pos:pos + 2], "big")
             pos += 2
             payload = data[pos:pos + payload_len]
@@ -146,11 +138,13 @@ class GlyphCube:
         if value is None:
             return "null", b""
         if isinstance(value, bool):
-            return "bool", b"1" if value else b"0"
+            return "bool", b"\x01" if value else b"\x00"
         if isinstance(value, int) and not isinstance(value, bool):
-            return "int", str(value).encode("utf-8")
+            return "int", int(value).to_bytes(8, "big", signed=True)
         if isinstance(value, float):
-            return "float", repr(value).encode("utf-8")
+            import struct
+
+            return "float", struct.pack(">d", value)
         return "str", str(value).encode("utf-8")
 
     def _decode_value(self, value_type: str | None, raw: bytes) -> Any:
@@ -161,11 +155,13 @@ class GlyphCube:
         if value_type == "null":
             return None
         if value_type == "bool":
-            return raw == b"1"
+            return raw != b"\x00"
         if value_type == "int":
-            return int(raw.decode("utf-8"))
+            return int.from_bytes(raw, "big", signed=True)
         if value_type == "float":
-            return float(raw.decode("utf-8"))
+            import struct
+
+            return struct.unpack(">d", raw)[0]
         return raw.decode("utf-8")
 
 
