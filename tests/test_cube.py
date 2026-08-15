@@ -18,3 +18,31 @@ def test_rubiks_inverse_restores_history():
     restored = cube.inverse()
     assert restored.history == []
     assert restored.as_bytes() == RubiksGlyphCube.solved().as_bytes()
+
+
+def test_all_turns_round_trip_with_inverse():
+    turns = ("R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'")
+    for turn in turns:
+        solved = RubiksGlyphCube.solved()
+        inverse = {"R": "R'", "R'": "R", "L": "L'", "L'": "L", "U": "U'", "U'": "U", "D": "D'", "D'": "D", "F": "F'", "F'": "F", "B": "B'", "B'": "B"}[turn]
+        cube = solved.rotate(turn).rotate(inverse)
+        assert cube.as_bytes() == solved.as_bytes()
+        assert cube.history == []
+
+
+def test_all_turns_restore_solved_state_when_followed_by_inverse():
+    turns = ("R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'")
+    solved = RubiksGlyphCube.solved()
+    for turn in turns:
+        cube = solved.rotate(turn).rotate({"R": "R'", "R'": "R", "L": "L'", "L'": "L", "U": "U'", "U'": "U", "D": "D'", "D'": "D", "F": "F'", "F'": "F", "B": "B'", "B'": "B"}[turn])
+        assert cube.as_bytes() == solved.as_bytes()
+        assert cube.history == []
+
+
+def test_sequence_inverse_restores_solved_state():
+    solved = RubiksGlyphCube.solved()
+    sequence = ["R", "U", "R'", "U'", "F", "B", "L", "D"]
+    cube = solved.apply(sequence)
+    restored = cube.inverse()
+    assert restored.as_bytes() == solved.as_bytes()
+    assert restored.history == []
