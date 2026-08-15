@@ -46,3 +46,14 @@ def test_sequence_inverse_restores_solved_state():
     restored = cube.inverse()
     assert restored.as_bytes() == solved.as_bytes()
     assert restored.history == []
+
+
+def test_rubiks_orientation_partition_counts():
+    cube = RubiksGlyphCube.solved()
+    cube.validate()
+    corners = [name for name in cube.facelets if name.split(":", 1)[1] in {"00", "02", "20", "22"}]
+    edges = [name for name in cube.facelets if name.split(":", 1)[1] in {"01", "10", "12", "21"}]
+    centers = [name for name in cube.facelets if name.split(":", 1)[1] == "11"]
+    assert len(corners) == 24
+    assert len(edges) == 24
+    assert len(centers) == 6

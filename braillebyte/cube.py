@@ -52,6 +52,27 @@ class RubiksGlyphCube:
         missing = [name for name in FACELET_ORDER if name not in self.facelets]
         if missing:
             raise ValueError(f"missing facelets: {', '.join(missing)}")
+        seen = set()
+        for name in FACELET_ORDER:
+            if name in seen:
+                raise ValueError(f"duplicate facelet: {name}")
+            seen.add(name)
+            self._validate_facelet_orientation(name, self.facelets[name])
+
+    def _validate_facelet_orientation(self, name: str, facelet: Facelet) -> None:
+        expected = self._state_to_name(*self._sticker_state(name))
+        if expected != name:
+            raise ValueError(f"invalid facelet orientation: {name} -> {expected}")
+        face = name.split(":", 1)[0]
+        row = int(name.split(":", 1)[1][0])
+        col = int(name.split(":", 1)[1][1])
+        if (row, col) == (1, 1):
+            return
+        if row in {0, 2} and col in {0, 2}:
+            return
+        if row == 1 or col == 1:
+            return
+        raise ValueError(f"invalid edge/corner placement: {name}")
 
     def rotate(self, turn: str) -> "RubiksGlyphCube":
         if turn not in {"R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'"}:
