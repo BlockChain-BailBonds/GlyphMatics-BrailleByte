@@ -1,109 +1,250 @@
 {
-  "protocol": "glyphmatics-braillebyte-benchmark-v1",
-  "artifacts": [
+  "format": "GlyphMatics Compression Benchmark Suite",
+  "records": 27,
+  "rows": [
     {
-      "name": "semantic_stream",
-      "kind": "semantic",
-      "path": "data/system_sentence_corpus.jsonl",
-      "input_bytes": 20745,
-      "input_sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539",
-      "results": {
-        "gzip": {
-          "bytes": 662,
-          "ratio": 31.3369,
-          "encode_s": 0.000218,
-          "decode_s": 3.7e-05,
-          "exact": true,
-          "sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539"
-        },
-        "bz2": {
-          "bytes": 722,
-          "ratio": 28.7327,
-          "encode_s": 0.001692,
-          "decode_s": 0.000192,
-          "exact": true,
-          "sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539"
-        },
-        "lzma": {
-          "bytes": 652,
-          "ratio": 31.8175,
-          "encode_s": 0.007107,
-          "decode_s": 5.7e-05,
-          "exact": true,
-          "sha256": "3da2874691ebb42049e57e35a01dbdbd80575e1c4030f6ffedf8cb97ac0e8539"
-        }
-      },
-      "winner": "lzma"
+      "text": "safe offline edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 94,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1787,
+      "ratio_plain_to_braille": 0.1787,
+      "round_trip": true
     },
     {
-      "name": "glyph_vocabulary",
-      "kind": "vocabulary",
-      "path": "/home/nine1eight/GlyphMatics/artifacts/semantic-programming-systems-v3/semantic_vocab.json",
-      "input_bytes": 108324,
-      "input_sha256": "26dd43cd6e885ec7d9b1275b14d2e4643126725c619f897b8c4a28d4d2a53729",
-      "results": {
-        "gzip": {
-          "bytes": 10726,
-          "ratio": 10.0992,
-          "encode_s": 0.004268,
-          "decode_s": 0.000184,
-          "exact": true,
-          "sha256": "26dd43cd6e885ec7d9b1275b14d2e4643126725c619f897b8c4a28d4d2a53729"
-        },
-        "bz2": {
-          "bytes": 7897,
-          "ratio": 13.7171,
-          "encode_s": 0.005882,
-          "decode_s": 0.001063,
-          "exact": true,
-          "sha256": "26dd43cd6e885ec7d9b1275b14d2e4643126725c619f897b8c4a28d4d2a53729"
-        },
-        "lzma": {
-          "bytes": 8776,
-          "ratio": 12.3432,
-          "encode_s": 0.021537,
-          "decode_s": 0.00053,
-          "exact": true,
-          "sha256": "26dd43cd6e885ec7d9b1275b14d2e4643126725c619f897b8c4a28d4d2a53729"
-        }
-      },
-      "winner": "bz2"
+      "text": "realtime offline edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 98,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1863,
+      "ratio_plain_to_braille": 0.1863,
+      "round_trip": true
     },
     {
-      "name": "glyph_checkpoint",
-      "kind": "weights",
-      "path": "/home/nine1eight/GlyphMatics/checkpoints/semantic-glyph-lm-v1.pt",
-      "input_bytes": 24550649,
-      "input_sha256": "aaec25615141f0659739adfc4b8550bdf4fbb7d038f80b4a073ecb7ba5e170c7",
-      "results": {
-        "gzip": {
-          "bytes": 22588052,
-          "ratio": 1.0869,
-          "encode_s": 0.743198,
-          "decode_s": 0.129842,
-          "exact": true,
-          "sha256": "aaec25615141f0659739adfc4b8550bdf4fbb7d038f80b4a073ecb7ba5e170c7"
-        },
-        "bz2": {
-          "bytes": 23052995,
-          "ratio": 1.065,
-          "encode_s": 1.842562,
-          "decode_s": 1.22143,
-          "exact": true,
-          "sha256": "aaec25615141f0659739adfc4b8550bdf4fbb7d038f80b4a073ecb7ba5e170c7"
-        },
-        "lzma": {
-          "bytes": 22280452,
-          "ratio": 1.1019,
-          "encode_s": 8.361177,
-          "decode_s": 1.146045,
-          "exact": true,
-          "sha256": "aaec25615141f0659739adfc4b8550bdf4fbb7d038f80b4a073ecb7ba5e170c7"
-        }
-      },
-      "winner": "lzma"
+      "text": "auditable offline edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 99,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1882,
+      "ratio_plain_to_braille": 0.1882,
+      "round_trip": true
+    },
+    {
+      "text": "safe hybrid edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 93,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1768,
+      "ratio_plain_to_braille": 0.1768,
+      "round_trip": true
+    },
+    {
+      "text": "realtime hybrid edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 97,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1844,
+      "ratio_plain_to_braille": 0.1844,
+      "round_trip": true
+    },
+    {
+      "text": "auditable hybrid edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 98,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1863,
+      "ratio_plain_to_braille": 0.1863,
+      "round_trip": true
+    },
+    {
+      "text": "safe networked edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 96,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1825,
+      "ratio_plain_to_braille": 0.1825,
+      "round_trip": true
+    },
+    {
+      "text": "realtime networked edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 100,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1901,
+      "ratio_plain_to_braille": 0.1901,
+      "round_trip": true
+    },
+    {
+      "text": "auditable networked edge analytics with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 101,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.192,
+      "ratio_plain_to_braille": 0.192,
+      "round_trip": true
+    },
+    {
+      "text": "safe offline local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 95,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1806,
+      "ratio_plain_to_braille": 0.1806,
+      "round_trip": true
+    },
+    {
+      "text": "realtime offline local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 99,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1882,
+      "ratio_plain_to_braille": 0.1882,
+      "round_trip": true
+    },
+    {
+      "text": "auditable offline local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 100,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1901,
+      "ratio_plain_to_braille": 0.1901,
+      "round_trip": true
+    },
+    {
+      "text": "safe hybrid local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 94,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1787,
+      "ratio_plain_to_braille": 0.1787,
+      "round_trip": true
+    },
+    {
+      "text": "realtime hybrid local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 98,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1863,
+      "ratio_plain_to_braille": 0.1863,
+      "round_trip": true
+    },
+    {
+      "text": "auditable hybrid local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 99,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1882,
+      "ratio_plain_to_braille": 0.1882,
+      "round_trip": true
+    },
+    {
+      "text": "safe networked local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 97,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1844,
+      "ratio_plain_to_braille": 0.1844,
+      "round_trip": true
+    },
+    {
+      "text": "realtime networked local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 101,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.192,
+      "ratio_plain_to_braille": 0.192,
+      "round_trip": true
+    },
+    {
+      "text": "auditable networked local assistant with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 102,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1939,
+      "ratio_plain_to_braille": 0.1939,
+      "round_trip": true
+    },
+    {
+      "text": "safe offline resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 97,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1844,
+      "ratio_plain_to_braille": 0.1844,
+      "round_trip": true
+    },
+    {
+      "text": "realtime offline resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 101,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.192,
+      "ratio_plain_to_braille": 0.192,
+      "round_trip": true
+    },
+    {
+      "text": "auditable offline resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 102,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1939,
+      "ratio_plain_to_braille": 0.1939,
+      "round_trip": true
+    },
+    {
+      "text": "safe hybrid resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 96,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1825,
+      "ratio_plain_to_braille": 0.1825,
+      "round_trip": true
+    },
+    {
+      "text": "realtime hybrid resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 100,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1901,
+      "ratio_plain_to_braille": 0.1901,
+      "round_trip": true
+    },
+    {
+      "text": "auditable hybrid resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 101,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.192,
+      "ratio_plain_to_braille": 0.192,
+      "round_trip": true
+    },
+    {
+      "text": "safe networked resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 99,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1882,
+      "ratio_plain_to_braille": 0.1882,
+      "round_trip": true
+    },
+    {
+      "text": "realtime networked resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 103,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1958,
+      "ratio_plain_to_braille": 0.1958,
+      "round_trip": true
+    },
+    {
+      "text": "auditable networked resilient service with controller, network, storage, security, power, and telemetry.",
+      "plain_bytes": 104,
+      "prior_bytes": 526,
+      "braille_cells": 526,
+      "ratio_plain_to_prior": 0.1977,
+      "ratio_plain_to_braille": 0.1977,
+      "round_trip": true
     }
   ],
-  "sota_claim": false,
-  "rule": "Independent rerun and named-baseline win required before any SOTA claim."
+  "all_round_trip": true
 }

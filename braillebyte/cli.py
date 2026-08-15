@@ -5,6 +5,7 @@ import json
 import sys
 
 from .codec import BrailleByteCodec
+from .cube import GlyphCube, GlyphCubeFace
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -25,6 +26,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     hr = sub.add_parser("hear")
     hr.add_argument("speech")
+
+    cu = sub.add_parser("cube-encode")
+    cu.add_argument("spec", help="JSON object with face payloads and optional semantic frames")
+
+    cd = sub.add_parser("cube-decode")
+    cd.add_argument("cells")
     return parser
 
 
@@ -41,6 +48,20 @@ def main(argv: list[str] | None = None) -> int:
         print("braillebyte " + " / ".join(args.cells) + " end")
     elif args.cmd == "hear":
         print(args.speech.replace("braillebyte ", "").replace(" end", "").replace(" / ", ""))
+    elif args.cmd == "cube-encode":
+        spec = json.loads(args.spec)
+        faces = {}
+        for name, meta in spec["faces"].items():
+            faces[name] = GlyphCubeFace(
+                name=name,
+                payload=bytes.fromhex(meta.get("payload_hex", "")),
+                semantic_frame=meta.get("semantic_frame", {}),
+            )
+        cube = GlyphCube(faces=faces)
+        print(codec.cube_to_bra8lle(cube))
+    elif args.cmd == "cube-decode":
+        cube = codec.bra8lle_to_cube(args.cells)
+        print(json.dumps(cube.semantic_summary(), indent=2, ensure_ascii=False))
     return 0
 
 

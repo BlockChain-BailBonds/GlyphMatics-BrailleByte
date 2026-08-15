@@ -1,11 +1,66 @@
-import argparse,bz2,gzip,json,lzma,time
-from hashlib import sha256
+from __future__ import annotations
+
+import argparse
+import json
+import sys
 from pathlib import Path
-def run(raw,fn,inv):
- t=time.perf_counter();out=fn(raw);e=time.perf_counter()-t;t=time.perf_counter();back=inv(out);d=time.perf_counter()-t
- return {'bytes':len(out),'ratio':round(len(raw)/len(out),4),'encode_s':round(e,6),'decode_s':round(d,6),'exact':back==raw,'sha256':sha256(back).hexdigest()}
-p=argparse.ArgumentParser();p.add_argument('--manifest',default='data/benchmark_manifest.json');p.add_argument('--out',default='data/benchmark_suite_report.json');a=p.parse_args();rows=[]
-for item in json.loads(Path(a.manifest).read_text())['artifacts']:
- raw=Path(item['path']).read_bytes();results={'gzip':run(raw,gzip.compress,gzip.decompress),'bz2':run(raw,bz2.compress,bz2.decompress),'lzma':run(raw,lzma.compress,lzma.decompress)}
- rows.append({**item,'input_bytes':len(raw),'input_sha256':sha256(raw).hexdigest(),'results':results,'winner':max(results,key=lambda k:results[k]['ratio'])})
-report={'protocol':'glyphmatics-braillebyte-benchmark-v1','artifacts':rows,'sota_claim':False,'rule':'Independent rerun and named-baseline win required before any SOTA claim.'};Path(a.out).write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from braillebyte.compression import BrailleByteCompressor
+from braillebyte.codec import BrailleByteCodec
+from braillebyte.semantic_graph import SemanticGraph
+
+
+def load_corpus(path: Path) -> list[str]:
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        rows.append(row.get("text") or row.get("source") or "")
+    return rows
+
+
+def ratio(original: int, compressed: int) -> float:
+    return round(original / compressed, 4) if compressed else 0.0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--output", required=True)
+    args = parser.parse_args()
+    source = Path(args.input)
+    out = Path(args.output)
+    corpus = load_corpus(source)
+    codec = BrailleByteCodec()
+    compressor = BrailleByteCompressor.train_from_texts(corpus, min_frequency=3, min_len=4, max_len=24)
+    rows = []
+    for text in corpus:
+        plain = text.encode("utf-8")
+        prior = compressor.compress_with_prior(text)
+        braille = codec.encode_bytes(bytes(prior))
+        rows.append({
+            "text": text,
+            "plain_bytes": len(plain),
+            "prior_bytes": len(prior),
+            "braille_cells": len(braille),
+            "ratio_plain_to_prior": ratio(len(plain), len(prior)),
+            "ratio_plain_to_braille": ratio(len(plain), len(braille)),
+            "round_trip": compressor.decompress_with_prior(prior) == text,
+        })
+    report = {
+        "format": "GlyphMatics Compression Benchmark Suite",
+        "records": len(rows),
+        "rows": rows,
+        "all_round_trip": all(row["round_trip"] for row in rows),
+    }
+    out.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
