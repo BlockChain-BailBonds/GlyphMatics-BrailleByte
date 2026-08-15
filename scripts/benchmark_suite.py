@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import struct
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +26,44 @@ def load_corpus(path: Path) -> list[str]:
 
 def ratio(original: int, compressed: int) -> float:
     return round(original / compressed, 4) if compressed else 0.0
+
+
+def pack_varint(value: int) -> bytes:
+    if value < 0:
+        raise ValueError("negative values are unsupported")
+    out = bytearray()
+    while True:
+        byte = value & 0x7F
+        value >>= 7
+        out.append(byte | (0x80 if value else 0))
+        if not value:
+            return bytes(out)
+
+
+def write_text(out: bytearray, text: str) -> None:
+    data = text.encode("utf-8")
+    out.extend(pack_varint(len(data)))
+    out.extend(data)
+
+
+def encode_binary_report(report: dict[str, object]) -> bytes:
+    out = bytearray()
+    out.extend(b"BMS1")
+    write_text(out, str(report["format"]))
+    out.extend(pack_varint(int(report["records"])))
+    rows = report["rows"]
+    out.extend(pack_varint(len(rows)))
+    for row in rows:
+        assert isinstance(row, dict)
+        write_text(out, str(row["text"]))
+        out.extend(pack_varint(int(row["plain_bytes"])))
+        out.extend(pack_varint(int(row["prior_bytes"])))
+        out.extend(pack_varint(int(row["braille_cells"])))
+        out.extend(struct.pack(">d", float(row["ratio_plain_to_prior"])))
+        out.extend(struct.pack(">d", float(row["ratio_plain_to_braille"])))
+        out.append(1 if row["round_trip"] else 0)
+    out.append(1 if report["all_round_trip"] else 0)
+    return bytes(out)
 
 
 def main() -> int:
@@ -57,8 +96,8 @@ def main() -> int:
         "rows": rows,
         "all_round_trip": all(row["round_trip"] for row in rows),
     }
-    out.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps(report, indent=2, ensure_ascii=False))
+    out.write_bytes(encode_binary_report(report))
+    print(json.dumps(report, separators=(",", ":"), ensure_ascii=False))
     return 0
 
 
