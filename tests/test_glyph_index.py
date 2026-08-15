@@ -8,6 +8,7 @@ from braillebyte.glyph_index import (
     VOCABULARY_GRAPH,
     ChunkRecord,
     GlyphChunkIndex,
+    RubiksCheckpointManifest,
     TensorRoute,
     VocabularyShard,
 )
@@ -37,6 +38,25 @@ class GlyphChunkIndexTests(unittest.TestCase):
         self.assertEqual(self.index.route_tensor(0, 'attention')[0].chunk_id, 'layer0')
         self.assertTrue(self.index.verify_chunk('embed', self.payload))
         self.assertFalse(self.index.verify_chunk('embed', b'altered'))
+
+    def test_manifest_cube_round_trip(self):
+        manifest = RubiksCheckpointManifest(
+            model_id='test-model',
+            architecture_id='arch-v1',
+            tokenizer_id='tok-v1',
+            quantization_scheme='q4',
+            chunk_index=self.index,
+            reconstruction_order=('embed', 'output', 'layer0'),
+        )
+        cube = manifest.build_cube()
+        restored = RubiksCheckpointManifest.from_cube(cube, self.index)
+        self.assertEqual(restored.model_id, 'test-model')
+        self.assertEqual(restored.architecture_id, 'arch-v1')
+        self.assertEqual(restored.tokenizer_id, 'tok-v1')
+        self.assertEqual(restored.quantization_scheme, 'q4')
+        self.assertEqual(restored.reconstruction_order, ('embed', 'output', 'layer0'))
+        self.assertTrue(manifest.verify({'embed': self.payload, 'output': b'chunk-b', 'layer0': b'chunk-c'}))
+        self.assertFalse(manifest.verify({'embed': b'bad'}))
 
 
 if __name__ == '__main__':

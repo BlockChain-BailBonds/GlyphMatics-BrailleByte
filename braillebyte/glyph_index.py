@@ -37,6 +37,90 @@ class TensorRoute:
     chunk_ids: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class ManifestCubie:
+    kind: str
+    label: str
+    orientation: int = 0
+
+
+@dataclass
+class RubiksCheckpointManifest:
+    model_id: str
+    architecture_id: str
+    tokenizer_id: str
+    quantization_scheme: str
+    chunk_index: GlyphChunkIndex
+    reconstruction_order: tuple[str, ...] = field(default_factory=tuple)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "model_id": self.model_id,
+            "architecture_id": self.architecture_id,
+            "tokenizer_id": self.tokenizer_id,
+            "quantization_scheme": self.quantization_scheme,
+            "chunk_index": self.chunk_index.to_dict(),
+            "reconstruction_order": list(self.reconstruction_order),
+        }
+
+    def to_cube_summary(self) -> dict[str, object]:
+        return {
+            "centers": {
+                "front": self.architecture_id,
+                "right": self.tokenizer_id,
+                "left": self.quantization_scheme,
+                "top": self.model_id,
+                "bottom": "integrity",
+                "back": "reconstruction",
+            },
+            "edges": [route.tensor_name for route in self.chunk_index.tensors],
+            "corners": [chunk.chunk_id for chunk in self.chunk_index.chunks[:8]],
+            "reconstruction_order": list(self.reconstruction_order or tuple(chunk.chunk_id for chunk in self.chunk_index.chunks)),
+        }
+
+    def build_cube(self):
+        from .cube import FACE_ORDER, GlyphCube, GlyphCubeFace
+
+        summary = self.to_cube_summary()
+        faces = {}
+        for face in FACE_ORDER:
+            payload = json.dumps(summary.get("centers", {}).get(face, face), ensure_ascii=False).encode("utf-8")
+            frame = {"role": face, "kind": "manifest"}
+            if face == "front":
+                frame["domain"] = self.architecture_id
+            elif face == "right":
+                frame["label"] = self.tokenizer_id
+            elif face == "left":
+                frame["label"] = self.quantization_scheme
+            elif face == "top":
+                frame["label"] = self.model_id
+            elif face == "bottom":
+                frame["label"] = "integrity"
+            elif face == "back":
+                frame["label"] = "reconstruction"
+            faces[face] = GlyphCubeFace(name=face, payload=payload, semantic_frame=frame)
+        return GlyphCube(faces=faces)
+
+    @classmethod
+    def from_cube(cls, cube, chunk_index: GlyphChunkIndex) -> "RubiksCheckpointManifest":
+        summary = cube.semantic_summary()
+        return cls(
+            model_id=summary["top"].get("label", "unknown"),
+            architecture_id=summary["front"].get("domain", "unknown"),
+            tokenizer_id=summary["right"].get("label", "unknown"),
+            quantization_scheme=summary["left"].get("label", "unknown"),
+            chunk_index=chunk_index,
+            reconstruction_order=tuple(chunk.chunk_id for chunk in chunk_index.chunks),
+        )
+
+    def verify(self, payloads: dict[str, bytes]) -> bool:
+        for chunk in self.chunk_index.chunks:
+            payload = payloads.get(chunk.chunk_id)
+            if payload is None or sha256(payload).hexdigest() != chunk.digest:
+                return False
+        return True
+
+
 @dataclass
 class GlyphChunkIndex:
     model_id: str

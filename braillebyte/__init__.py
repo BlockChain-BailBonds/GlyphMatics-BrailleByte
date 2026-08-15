@@ -8,6 +8,7 @@ from .glyph_index import (
     VOCABULARY_GRAPH,
     ChunkRecord,
     GlyphChunkIndex,
+    RubiksCheckpointManifest,
     TensorRoute,
     VocabularyShard,
 )
@@ -28,6 +29,7 @@ __all__ = [
     "INTEGRITY_GRAPH",
     "ChunkRecord",
     "GlyphChunkIndex",
+    "RubiksCheckpointManifest",
     "TensorRoute",
     "VocabularyShard",
     "ConceptRegistry",
