@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "braillebyte"
+version = "0.1.0"
+description = "GlyphMatics BrailleByte semantic codec"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["Pillow>=10.0.0"]
+
+[project.scripts]
+braillebyte = "braillebyte.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+include = ["braillebyte*"]
