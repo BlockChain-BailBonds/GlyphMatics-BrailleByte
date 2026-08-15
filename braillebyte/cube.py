@@ -1,11 +1,21 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from typing import Any
 
 
 FACE_ORDER = ("front", "right", "left", "top", "bottom", "back")
+FRAME_KEYS = {
+    "role": 1,
+    "domain": 2,
+    "state": 3,
+    "confidence": 4,
+    "kind": 5,
+    "label": 6,
+}
+FRAME_BACK = {value: key for key, value in FRAME_KEYS.items()}
+VALUE_TAGS = {"str": 1, "int": 2, "float": 3, "bool": 4, "null": 5}
+VALUE_BACK = {value: key for key, value in VALUE_TAGS.items()}
 
 
 @dataclass(frozen=True)
@@ -32,13 +42,46 @@ class GlyphCube:
     def _unpack_u16(self, data: bytes, pos: int) -> tuple[int, int]:
         return int.from_bytes(data[pos:pos + 2], "big"), pos + 2
 
+    def _encode_frame(self, frame: dict[str, Any]) -> bytes:
+        out = bytearray()
+        items = sorted(frame.items(), key=lambda item: FRAME_KEYS.get(item[0], 255))
+        out.append(len(items) & 0xFF)
+        for key, value in items:
+            tag = FRAME_KEYS.get(key)
+            if tag is None:
+                continue
+            out.append(tag)
+            type_name, raw = self._encode_value(value)
+            out.append(VALUE_TAGS[type_name])
+            out.extend(self._pack_u16(len(raw)))
+            out.extend(raw)
+        return bytes(out)
+
+    def _decode_frame(self, data: bytes, pos: int) -> tuple[dict[str, Any], int]:
+        count = data[pos]
+        pos += 1
+        frame: dict[str, Any] = {}
+        for _ in range(count):
+            tag = data[pos]
+            pos += 1
+            value_type = VALUE_BACK.get(data[pos])
+            pos += 1
+            length, pos = self._unpack_u16(data, pos)
+            raw = data[pos:pos + length]
+            pos += length
+            key = FRAME_BACK.get(tag)
+            if key is None:
+                continue
+            frame[key] = self._decode_value(value_type, raw)
+        return frame, pos
+
     def to_bytes(self) -> bytes:
         self.validate()
         out = bytearray()
         out.extend(b"GCB1")
         for face in FACE_ORDER:
             payload = self.faces[face].payload
-            frame = json.dumps(self.faces[face].semantic_frame, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            frame = self._encode_frame(self.faces[face].semantic_frame)
             out.extend(self._pack_u16(len(payload)))
             out.extend(payload)
             out.extend(self._pack_u16(len(frame)))
@@ -61,7 +104,7 @@ class GlyphCube:
             pos += payload_len
             frame_len = int.from_bytes(data[pos:pos + 2], "big")
             pos += 2
-            frame = json.loads(data[pos:pos + frame_len].decode("utf-8"))
+            frame, _ = cls._decode_frame_bytes(data[pos:pos + frame_len])
             pos += frame_len
             faces[face] = GlyphCubeFace(name=face, payload=payload, semantic_frame=frame)
         return cls(faces=faces)
@@ -69,3 +112,63 @@ class GlyphCube:
     def semantic_summary(self) -> dict[str, Any]:
         self.validate()
         return {face: self.faces[face].semantic_frame for face in FACE_ORDER}
+
+    @staticmethod
+    def _decode_frame_bytes(data: bytes) -> tuple[dict[str, Any], int]:
+        pos = 0
+        count = data[pos]
+        pos += 1
+        frame: dict[str, Any] = {}
+        for _ in range(count):
+            tag = data[pos]
+            pos += 1
+            value_type = VALUE_BACK.get(data[pos])
+            pos += 1
+            length = int.from_bytes(data[pos:pos + 2], "big")
+            pos += 2
+            raw = data[pos:pos + length]
+            pos += length
+            key = FRAME_BACK.get(tag)
+            if key is None:
+                continue
+            frame[key] = GlyphCube._decode_value_static(value_type, raw)
+        return frame, pos
+
+    def _encode_value(self, value: Any) -> tuple[str, bytes]:
+        if value is None:
+            return "null", b""
+        if isinstance(value, bool):
+            return "bool", b"1" if value else b"0"
+        if isinstance(value, int) and not isinstance(value, bool):
+            return "int", str(value).encode("utf-8")
+        if isinstance(value, float):
+            return "float", repr(value).encode("utf-8")
+        return "str", str(value).encode("utf-8")
+
+    def _decode_value(self, value_type: str | None, raw: bytes) -> Any:
+        return self._decode_value_static(value_type, raw)
+
+    @staticmethod
+    def _decode_value_static(value_type: str | None, raw: bytes) -> Any:
+        if value_type == "null":
+            return None
+        if value_type == "bool":
+            return raw == b"1"
+        if value_type == "int":
+            return int(raw.decode("utf-8"))
+        if value_type == "float":
+            return float(raw.decode("utf-8"))
+        return raw.decode("utf-8")
+
+
+def jsonless(value: Any) -> str:
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return "" if value is None else str(value)
+    if isinstance(value, dict):
+        parts = []
+        for key in sorted(value):
+            parts.append(f"{key}:{jsonless(value[key])}")
+        return "{" + ",".join(parts) + "}"
+    if isinstance(value, (list, tuple)):
+        return "[" + ",".join(jsonless(item) for item in value) + "]"
+    return str(value)
