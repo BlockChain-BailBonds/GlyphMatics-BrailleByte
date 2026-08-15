@@ -1,0 +1,1 @@
+{"artifacts":[{"name":"semantic_stream","kind":"semantic","path":"data/system_sentence_corpus.jsonl"},{"name":"glyph_vocabulary","kind":"vocabulary","path":"/home/nine1eight/GlyphMatics/artifacts/semantic-programming-systems-v3/semantic_vocab.json"},{"name":"glyph_checkpoint","kind":"weights","path":"/home/nine1eight/GlyphMatics/checkpoints/semantic-glyph-lm-v1.pt"}]}
