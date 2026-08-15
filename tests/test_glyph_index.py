@@ -72,6 +72,10 @@ class GlyphChunkIndexTests(unittest.TestCase):
             self.index,
         )
         self.assertEqual(restored_layout.reconstruction_order, ('embed', 'output', 'layer0'))
+        payload = manifest.to_bytes()
+        restored_bytes = RubiksCheckpointManifest.from_bytes(payload)
+        self.assertEqual(restored_bytes.model_id, 'test-model')
+        self.assertEqual(restored_bytes.chunk_index.model_id, 'test-model')
 
 
 if __name__ == '__main__':

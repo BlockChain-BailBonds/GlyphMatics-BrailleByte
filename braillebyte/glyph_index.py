@@ -110,6 +110,34 @@ class RubiksCheckpointManifest:
             faces[face] = GlyphCubeFace(name=face, payload=payload, semantic_frame=frame)
         return GlyphCube(faces=faces)
 
+    def to_bytes(self) -> bytes:
+        cube = self.build_cube()
+        payload = {
+            "format": "RubiksCheckpointManifest",
+            "manifest": self.to_dict(),
+            "cube_bytes": cube.as_bytes().hex(),
+        }
+        return json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+    @classmethod
+    def from_bytes(cls, data: bytes) -> "RubiksCheckpointManifest":
+        payload = json.loads(data.decode("utf-8"))
+        chunk_index_payload = payload["manifest"]["chunk_index"]
+        chunk_index = GlyphChunkIndex(
+            model_id=chunk_index_payload["model_id"],
+            chunks=tuple(ChunkRecord(**chunk) for chunk in chunk_index_payload.get("chunks", [])),
+            vocabulary=tuple(VocabularyShard(**shard) for shard in chunk_index_payload.get("vocabulary", [])),
+            tensors=tuple(TensorRoute(layer_index=item["layer_index"], tensor_name=item["tensor_name"], chunk_ids=tuple(item["chunk_ids"])) for item in chunk_index_payload.get("tensors", [])),
+        )
+        return cls(
+            model_id=payload["manifest"]["model_id"],
+            architecture_id=payload["manifest"]["architecture_id"],
+            tokenizer_id=payload["manifest"]["tokenizer_id"],
+            quantization_scheme=payload["manifest"]["quantization_scheme"],
+            chunk_index=chunk_index,
+            reconstruction_order=tuple(payload["manifest"].get("reconstruction_order", [])),
+        )
+
     @classmethod
     def from_cube(cls, cube, chunk_index: GlyphChunkIndex) -> "RubiksCheckpointManifest":
         summary = cube.semantic_summary()
