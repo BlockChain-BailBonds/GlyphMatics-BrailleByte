@@ -66,6 +66,74 @@ class EdgePiece:
     orientation: int
 
 
+@dataclass(frozen=True)
+class CubiePermutation:
+    corner_positions: tuple[str, ...]
+    corner_orientations: tuple[int, ...]
+    edge_positions: tuple[str, ...]
+    edge_orientations: tuple[int, ...]
+
+    def corner_parity(self) -> int:
+        return self._parity(self.corner_positions)
+
+    def edge_parity(self) -> int:
+        return self._parity(self.edge_positions)
+
+    def corner_orientation_sum(self) -> int:
+        return sum(self.corner_orientations) % 3
+
+    def edge_orientation_sum(self) -> int:
+        return sum(self.edge_orientations) % 2
+
+    def is_solved(self) -> bool:
+        return (
+            self.corner_positions == self.solved_corner_positions()
+            and self.edge_positions == self.solved_edge_positions()
+            and self.corner_orientation_sum() == 0
+            and self.edge_orientation_sum() == 0
+        )
+
+    def validate(self) -> None:
+        if len(self.corner_positions) != 8 or len(self.corner_orientations) != 8:
+            raise ValueError("invalid corner permutation")
+        if len(self.edge_positions) != 12 or len(self.edge_orientations) != 12:
+            raise ValueError("invalid edge permutation")
+        if self.corner_orientation_sum() != 0:
+            raise ValueError("corner orientation parity violation")
+        if self.edge_orientation_sum() != 0:
+            raise ValueError("edge orientation parity violation")
+        if self.corner_parity() != self.edge_parity():
+            raise ValueError("cube parity violation")
+
+    @staticmethod
+    def _parity(items: tuple[str, ...]) -> int:
+        seen = {}
+        parity = 0
+        for index, item in enumerate(items):
+            seen[item] = index
+        visited = set()
+        for start in range(len(items)):
+            if start in visited:
+                continue
+            cycle = []
+            idx = start
+            while idx not in visited:
+                visited.add(idx)
+                cycle.append(idx)
+                idx = seen[items[idx]]
+            if len(cycle) > 0:
+                parity ^= (len(cycle) - 1) % 2
+        return parity
+
+    @staticmethod
+    def solved_corner_positions() -> tuple[str, ...]:
+        return ("front:00", "front:02", "front:20", "front:22", "back:00", "back:02", "back:20", "back:22")
+
+    @staticmethod
+    def solved_edge_positions() -> tuple[str, ...]:
+        return ("front:01", "front:10", "front:12", "front:21", "back:01", "back:10", "back:12", "back:21", "top:10", "top:12", "bottom:10", "bottom:12")
+
+
 @dataclass
 class RubiksGlyphCube:
     facelets: dict[str, Facelet]
@@ -167,11 +235,28 @@ class RubiksGlyphCube:
             raise ValueError("corner position collision")
         if len({piece.position for piece in self.edges}) != len(self.edges):
             raise ValueError("edge position collision")
-        if sum(piece.orientation for piece in self.corners) % 3 != 0:
-            raise ValueError("corner orientation parity violation")
-        if sum(piece.orientation for piece in self.edges) % 2 != 0:
-            raise ValueError("edge orientation parity violation")
+        self.cubie_permutation().validate()
         return {"corners": self.corners, "edges": self.edges}
+
+    def cubie_permutation(self) -> CubiePermutation:
+        permutation = CubiePermutation(
+            corner_positions=tuple(piece.position for piece in self.corners),
+            corner_orientations=tuple(piece.orientation for piece in self.corners),
+            edge_positions=tuple(piece.position for piece in self.edges),
+            edge_orientations=tuple(piece.orientation for piece in self.edges),
+        )
+        permutation.validate()
+        return permutation
+
+    def cube_invariants(self) -> dict[str, Any]:
+        permutation = self.cubie_permutation()
+        return {
+            "corner_parity": permutation.corner_parity(),
+            "edge_parity": permutation.edge_parity(),
+            "corner_orientation_sum": permutation.corner_orientation_sum(),
+            "edge_orientation_sum": permutation.edge_orientation_sum(),
+            "is_solved": permutation.is_solved(),
+        }
 
     def _other_corner_stickers(self, name: str) -> tuple[str, str]:
         face, rc = name.split(":", 1)
@@ -286,14 +371,12 @@ class RubiksGlyphCube:
         return p, n
 
     def _rotate_corner(self, piece: CornerPiece, step: int, axis: str) -> CornerPiece:
-        orientation = (piece.orientation + (1 if axis in {"R", "L", "F", "B"} and step > 0 else 2 if axis in {"R", "L", "F", "B"} and step < 0 else 0)) % 3
         position = self._rotate_piece_position(piece.position, axis, step)
-        return CornerPiece(piece_id=piece.piece_id, position=position, orientation=orientation)
+        return CornerPiece(piece_id=piece.piece_id, position=position, orientation=0)
 
     def _rotate_edge(self, piece: EdgePiece, step: int, axis: str) -> EdgePiece:
-        orientation = (piece.orientation + (1 if axis in {"F", "B"} and step > 0 else 1 if axis in {"F", "B"} and step < 0 else 0)) % 2
         position = self._rotate_piece_position(piece.position, axis, step)
-        return EdgePiece(piece_id=piece.piece_id, position=position, orientation=orientation)
+        return EdgePiece(piece_id=piece.piece_id, position=position, orientation=0)
 
     def _rotate_piece_position(self, position: str, axis: str, step: int) -> str:
         pos, normal = self._sticker_state(position)

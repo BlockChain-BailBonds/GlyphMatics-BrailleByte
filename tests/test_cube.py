@@ -57,3 +57,21 @@ def test_rubiks_orientation_partition_counts():
     assert len(corners) == 24
     assert len(edges) == 24
     assert len(centers) == 6
+
+
+def test_cubie_permutation_invariants_are_exposed():
+    cube = RubiksGlyphCube.solved().apply(["R", "U", "F"])
+    invariants = cube.cube_invariants()
+    assert set(invariants) == {
+        "corner_parity",
+        "edge_parity",
+        "corner_orientation_sum",
+        "edge_orientation_sum",
+        "is_solved",
+    }
+    permutation = cube.cubie_permutation()
+    assert invariants["corner_parity"] == permutation.corner_parity()
+    assert invariants["edge_parity"] == permutation.edge_parity()
+    assert invariants["corner_orientation_sum"] == permutation.corner_orientation_sum()
+    assert invariants["edge_orientation_sum"] == permutation.edge_orientation_sum()
+    assert invariants["is_solved"] is False

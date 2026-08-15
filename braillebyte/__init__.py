@@ -1,6 +1,6 @@
 from .codec import BrailleByteCodec, SemanticGraphCodec
 from .compression import BrailleByteCompressor
-from .cube import FACELET_COUNT, FACELET_ORDER, FACE_ORDER, GlyphCube, GlyphCubeFace, RubiksGlyphCube
+from .cube import FACELET_COUNT, FACELET_ORDER, FACE_ORDER, CubiePermutation, GlyphCube, GlyphCubeFace, RubiksGlyphCube
 from .glyph_index import (
     ARCHITECTURE_GRAPH,
     CHUNK_GRAPH,
@@ -34,6 +34,7 @@ __all__ = [
     "FACE_ORDER",
     "FACELET_COUNT",
     "FACELET_ORDER",
+    "CubiePermutation",
     "GlyphCube",
     "GlyphCubeFace",
     "RubiksGlyphCube",
