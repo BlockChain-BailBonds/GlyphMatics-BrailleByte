@@ -38,6 +38,20 @@ class Facelet:
     semantic_frame: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class CornerCubie:
+    name: str
+    stickers: tuple[str, str, str]
+    orientation: int
+
+
+@dataclass(frozen=True)
+class EdgeCubie:
+    name: str
+    stickers: tuple[str, str]
+    orientation: int
+
+
 @dataclass
 class RubiksGlyphCube:
     facelets: dict[str, Facelet]
@@ -58,6 +72,7 @@ class RubiksGlyphCube:
                 raise ValueError(f"duplicate facelet: {name}")
             seen.add(name)
             self._validate_facelet_orientation(name, self.facelets[name])
+        self.cubie_state()
 
     def _validate_facelet_orientation(self, name: str, facelet: Facelet) -> None:
         expected = self._state_to_name(*self._sticker_state(name))
@@ -73,6 +88,68 @@ class RubiksGlyphCube:
         if row == 1 or col == 1:
             return
         raise ValueError(f"invalid edge/corner placement: {name}")
+
+    def cubie_state(self) -> dict[str, list[CornerCubie | EdgeCubie]]:
+        corners = []
+        edges = []
+        corner_defs = {
+            "front:00": ("front", "left", "top"),
+            "front:02": ("front", "right", "top"),
+            "front:20": ("front", "left", "bottom"),
+            "front:22": ("front", "right", "bottom"),
+            "back:00": ("back", "right", "top"),
+            "back:02": ("back", "left", "top"),
+            "back:20": ("back", "right", "bottom"),
+            "back:22": ("back", "left", "bottom"),
+        }
+        edge_defs = {
+            "front:01": ("front", "top"),
+            "front:10": ("front", "left"),
+            "front:12": ("front", "right"),
+            "front:21": ("front", "bottom"),
+            "back:01": ("back", "top"),
+            "back:10": ("back", "right"),
+            "back:12": ("back", "left"),
+            "back:21": ("back", "bottom"),
+            "left:01": ("left", "top"),
+            "left:12": ("left", "front"),
+            "left:10": ("left", "back"),
+            "left:21": ("left", "bottom"),
+            "right:01": ("right", "top"),
+            "right:12": ("right", "back"),
+            "right:10": ("right", "front"),
+            "right:21": ("right", "bottom"),
+            "top:01": ("top", "back"),
+            "top:10": ("top", "left"),
+            "top:12": ("top", "right"),
+            "top:21": ("top", "front"),
+            "bottom:01": ("bottom", "front"),
+            "bottom:10": ("bottom", "left"),
+            "bottom:12": ("bottom", "right"),
+            "bottom:21": ("bottom", "back"),
+        }
+        for anchor, faces in corner_defs.items():
+            stickers = tuple(sorted([anchor, *self._other_corner_stickers(anchor)]))
+            corners.append(CornerCubie(name=anchor, stickers=stickers, orientation=0 if anchor.startswith("front") or anchor.startswith("back") else 1))
+        for anchor, faces in edge_defs.items():
+            stickers = tuple(sorted([anchor, *self._other_edge_sticker(anchor)]))
+            edges.append(EdgeCubie(name=anchor, stickers=stickers, orientation=0 if anchor.startswith("front") or anchor.startswith("back") else 1))
+        if len(corners) != 8 or len(edges) != 24:
+            raise ValueError("invalid cubie state")
+        return {"corners": corners, "edges": edges}
+
+    def _other_corner_stickers(self, name: str) -> tuple[str, str]:
+        face, rc = name.split(":", 1)
+        if face in {"front", "back"}:
+            return (f"{'left' if rc[1] == '0' else 'right'}:{'0' if rc[0] == '0' else '2'}",
+                    f"{'top' if rc[0] == '0' else 'bottom'}:{'0' if rc[1] == '0' else '2'}")
+        return (name, name)
+
+    def _other_edge_sticker(self, name: str) -> tuple[str]:
+        face, rc = name.split(":", 1)
+        if face in {"front", "back"}:
+            return (f"{'top' if rc[0] == '0' else 'bottom'}:{'1' if rc[1] == '1' else '0'}",)
+        return (name,)
 
     def rotate(self, turn: str) -> "RubiksGlyphCube":
         if turn not in {"R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'"}:
