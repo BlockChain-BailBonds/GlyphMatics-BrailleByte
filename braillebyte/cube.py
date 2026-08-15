@@ -60,20 +60,19 @@ class RubiksGlyphCube:
             history = self.history[:-1]
         else:
             history = [*self.history, turn]
-        facelets = dict(self.facelets)
-        if turn in {"R", "R'"}:
-            facelets = self._cycle(facelets, ("top:02", "front:02", "bottom:02", "back:20"), turn == "R'")
-        elif turn in {"L", "L'"}:
-            facelets = self._cycle(facelets, ("top:00", "back:22", "bottom:00", "front:00"), turn == "L'")
-        elif turn in {"U", "U'"}:
-            facelets = self._cycle(facelets, ("back:00", "right:00", "front:00", "left:00"), turn == "U'")
-        elif turn in {"D", "D'"}:
-            facelets = self._cycle(facelets, ("front:20", "right:20", "back:20", "left:20"), turn == "D'")
-        elif turn in {"F", "F'"}:
-            facelets = self._cycle(facelets, ("top:20", "left:22", "bottom:02", "right:00"), turn == "F'")
-        elif turn in {"B", "B'"}:
-            facelets = self._cycle(facelets, ("top:00", "right:22", "bottom:20", "left:02"), turn == "B'")
-        return RubiksGlyphCube(facelets=facelets, history=history)
+        step = self._turn_sign(turn)
+        axis = turn[0]
+        transformed: dict[str, Facelet] = {}
+        for name, facelet in self.facelets.items():
+            pos, normal = self._sticker_state(name)
+            if self._in_turn_layer(axis, pos):
+                pos, normal = self._rotate_state(axis, pos, normal, step)
+            transformed[self._state_to_name(pos, normal)] = Facelet(
+                name=self._state_to_name(pos, normal),
+                payload=facelet.payload,
+                semantic_frame=dict(facelet.semantic_frame),
+            )
+        return RubiksGlyphCube(facelets=transformed, history=history)
 
     def apply(self, turns: list[str]) -> "RubiksGlyphCube":
         cube = self
@@ -87,13 +86,69 @@ class RubiksGlyphCube:
             cube = cube.rotate(TURN_INVERSES[turn])
         return cube
 
-    def _cycle(self, facelets: dict[str, Facelet], names: tuple[str, str, str, str], reverse: bool) -> dict[str, Facelet]:
-        a, b, c, d = names
-        if reverse:
-            facelets[a], facelets[b], facelets[c], facelets[d] = facelets[b], facelets[c], facelets[d], facelets[a]
-        else:
-            facelets[a], facelets[b], facelets[c], facelets[d] = facelets[d], facelets[a], facelets[b], facelets[c]
-        return facelets
+    def _turn_sign(self, turn: str) -> int:
+        return -1 if turn.endswith("'") else 1
+
+    def _in_turn_layer(self, axis: str, pos: tuple[int, int, int]) -> bool:
+        x, y, z = pos
+        return (axis == "R" and x == 1) or (axis == "L" and x == -1) or (axis == "U" and y == 1) or (axis == "D" and y == -1) or (axis == "F" and z == 1) or (axis == "B" and z == -1)
+
+    def _sticker_state(self, name: str) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        face, rc = name.split(":", 1)
+        row = int(rc[0])
+        col = int(rc[1])
+        if face == "front":
+            return (col - 1, 1 - row, 1), (0, 0, 1)
+        if face == "back":
+            return (1 - col, 1 - row, -1), (0, 0, -1)
+        if face == "right":
+            return (1, 1 - row, 1 - col), (1, 0, 0)
+        if face == "left":
+            return (-1, 1 - row, col - 1), (-1, 0, 0)
+        if face == "top":
+            return (col - 1, 1, row - 1), (0, 1, 0)
+        if face == "bottom":
+            return (col - 1, -1, 1 - row), (0, -1, 0)
+        raise ValueError(f"unknown facelet: {name}")
+
+    def _state_to_name(self, pos: tuple[int, int, int], normal: tuple[int, int, int]) -> str:
+        x, y, z = pos
+        nx, ny, nz = normal
+        if nz == 1:
+            return f"front:{1 - y}{x + 1}"
+        if nz == -1:
+            return f"back:{1 - y}{1 - x}"
+        if nx == 1:
+            return f"right:{1 - y}{1 - z}"
+        if nx == -1:
+            return f"left:{1 - y}{z + 1}"
+        if ny == 1:
+            return f"top:{z + 1}{x + 1}"
+        if ny == -1:
+            return f"bottom:{1 - z}{x + 1}"
+        raise ValueError(f"invalid sticker state: {pos} {normal}")
+
+    def _rotate_state(self, axis: str, pos: tuple[int, int, int], normal: tuple[int, int, int], step: int) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        def rotate_once(p: tuple[int, int, int], n: tuple[int, int, int]) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+            x, y, z = p
+            nx, ny, nz = n
+            if axis == "R":
+                return (x, -z, y), (nx, -nz, ny)
+            if axis == "L":
+                return (x, z, -y), (nx, nz, -ny)
+            if axis == "U":
+                return (z, y, -x), (nz, ny, -nx)
+            if axis == "D":
+                return (-z, y, x), (-nz, ny, nx)
+            if axis == "F":
+                return (-y, x, z), (-ny, nx, nz)
+            if axis == "B":
+                return (y, -x, z), (ny, -nx, nz)
+            raise ValueError(axis)
+        p, n = pos, normal
+        for _ in range(abs(step)):
+            p, n = rotate_once(p, n)
+        return p, n
 
     def semantic_summary(self) -> dict[str, Any]:
         return {name: self.facelets[name].semantic_frame for name in FACELET_ORDER}
