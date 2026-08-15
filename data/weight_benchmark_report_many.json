@@ -1,0 +1,77 @@
+{
+  "format": "GlyphMatics Weight Compression Benchmark",
+  "chunk_size": 1048576,
+  "bundle_bytes": 165271589,
+  "bundle_gzip_bytes": 152292992,
+  "bundle_zstd_bytes": 152113311,
+  "bundle_gzip_ratio": 1.0851,
+  "bundle_zstd_ratio": 1.0864,
+  "results": [
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/BlockChain-BailBonds_GlyphMatics-BrailleByte-LLM/training/creation_chat/latest.pt",
+      "input_bytes": 10362686,
+      "chunk_bytes": 165271589,
+      "gzip_bytes": 9476664,
+      "zstd_bytes": 9490986,
+      "chunk_ratio": 0.0627,
+      "gzip_ratio": 1.0935,
+      "zstd_ratio": 1.0918,
+      "round_trip": true
+    },
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/BlockChain-BailBonds_GlyphMatics-BrailleByte-LLM/training/creation_chat/snapshots/run-001.pt",
+      "input_bytes": 10367442,
+      "chunk_bytes": 165271589,
+      "gzip_bytes": 9478770,
+      "zstd_bytes": 9493364,
+      "chunk_ratio": 0.0627,
+      "gzip_ratio": 1.0938,
+      "zstd_ratio": 1.0921,
+      "round_trip": true
+    },
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/BlockChain-BailBonds_GlyphMatics-BrailleByte-LLM/training/creation_chat/snapshots/run-002.pt",
+      "input_bytes": 10367570,
+      "chunk_bytes": 165271589,
+      "gzip_bytes": 9476910,
+      "zstd_bytes": 9488938,
+      "chunk_ratio": 0.0627,
+      "gzip_ratio": 1.094,
+      "zstd_ratio": 1.0926,
+      "round_trip": true
+    },
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/BlockChain-BailBonds_GlyphMatics-BrailleByte-LLM/training/human_creation_chat/latest.pt",
+      "input_bytes": 10362558,
+      "chunk_bytes": 165271589,
+      "gzip_bytes": 9566235,
+      "zstd_bytes": 9578869,
+      "chunk_ratio": 0.0627,
+      "gzip_ratio": 1.0832,
+      "zstd_ratio": 1.0818,
+      "round_trip": true
+    },
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/BlockChain-BailBonds_GlyphMatics-BrailleByte-LLM/training/human_creation_chat/snapshots/run-001.pt",
+      "input_bytes": 10367442,
+      "chunk_bytes": 165271589,
+      "gzip_bytes": 9566334,
+      "zstd_bytes": 9578938,
+      "chunk_ratio": 0.0627,
+      "gzip_ratio": 1.0837,
+      "zstd_ratio": 1.0823,
+      "round_trip": true
+    },
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/sigilagi918_glyphmatics-sigilagi/models/vil-encoder-v1.2.pt",
+      "input_bytes": 113431045,
+      "chunk_bytes": 165271589,
+      "gzip_bytes": 104718832,
+      "zstd_bytes": 104473704,
+      "chunk_ratio": 0.6863,
+      "gzip_ratio": 1.0832,
+      "zstd_ratio": 1.0857,
+      "round_trip": true
+    }
+  ]
+}
