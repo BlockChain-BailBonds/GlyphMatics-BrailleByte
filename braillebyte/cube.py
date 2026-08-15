@@ -133,6 +133,105 @@ class CubiePermutation:
     def solved_edge_positions() -> tuple[str, ...]:
         return ("front:01", "front:10", "front:12", "front:21", "back:01", "back:10", "back:12", "back:21", "top:10", "top:12", "bottom:10", "bottom:12")
 
+    @classmethod
+    def solved(cls) -> "CubiePermutation":
+        return cls(
+            corner_positions=cls.solved_corner_positions(),
+            corner_orientations=(0, 0, 0, 0, 0, 0, 0, 0),
+            edge_positions=cls.solved_edge_positions(),
+            edge_orientations=(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        )
+
+    def apply_turn(self, turn: str) -> "CubiePermutation":
+        if turn not in {"R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'"}:
+            raise ValueError(f"unsupported turn: {turn}")
+        mapping = self._turn_maps(turn)
+        return CubiePermutation(
+            corner_positions=tuple(mapping["corners"][pos] for pos in self.corner_positions),
+            corner_orientations=self.corner_orientations,
+            edge_positions=tuple(mapping["edges"][pos] for pos in self.edge_positions),
+            edge_orientations=self.edge_orientations,
+        )
+
+    @staticmethod
+    def _turn_maps(turn: str) -> dict[str, dict[str, str]]:
+        def transform(name: str) -> str:
+            pos, normal = CubiePermutation._sticker_state(name)
+            axis = turn[0]
+            step = -1 if turn.endswith("'") else 1
+            if CubiePermutation._in_layer(axis, pos):
+                pos, normal = CubiePermutation._rotate_state(axis, pos, normal, step)
+            return CubiePermutation._state_to_name(pos, normal)
+
+        corners = {pos: transform(pos) for pos in CubiePermutation.solved_corner_positions()}
+        edges = {pos: transform(pos) for pos in CubiePermutation.solved_edge_positions()}
+        return {"corners": corners, "edges": edges}
+
+    @staticmethod
+    def _in_layer(axis: str, pos: tuple[int, int, int]) -> bool:
+        x, y, z = pos
+        return (axis == "R" and x == 1) or (axis == "L" and x == -1) or (axis == "U" and y == 1) or (axis == "D" and y == -1) or (axis == "F" and z == 1) or (axis == "B" and z == -1)
+
+    @staticmethod
+    def _sticker_state(name: str) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        face, rc = name.split(":", 1)
+        row = int(rc[0])
+        col = int(rc[1])
+        if face == "front":
+            return (col - 1, 1 - row, 1), (0, 0, 1)
+        if face == "back":
+            return (1 - col, 1 - row, -1), (0, 0, -1)
+        if face == "right":
+            return (1, 1 - row, 1 - col), (1, 0, 0)
+        if face == "left":
+            return (-1, 1 - row, col - 1), (-1, 0, 0)
+        if face == "top":
+            return (col - 1, 1, row - 1), (0, 1, 0)
+        if face == "bottom":
+            return (col - 1, -1, 1 - row), (0, -1, 0)
+        raise ValueError(face)
+
+    @staticmethod
+    def _state_to_name(pos: tuple[int, int, int], normal: tuple[int, int, int]) -> str:
+        x, y, z = pos
+        nx, ny, nz = normal
+        if nz == 1:
+            return f"front:{1 - y}{x + 1}"
+        if nz == -1:
+            return f"back:{1 - y}{1 - x}"
+        if nx == 1:
+            return f"right:{1 - y}{1 - z}"
+        if nx == -1:
+            return f"left:{1 - y}{z + 1}"
+        if ny == 1:
+            return f"top:{z + 1}{x + 1}"
+        if ny == -1:
+            return f"bottom:{1 - z}{x + 1}"
+        raise ValueError(f"invalid sticker state: {pos} {normal}")
+
+    @staticmethod
+    def _rotate_state(axis: str, pos: tuple[int, int, int], normal: tuple[int, int, int], step: int) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        def rotate_once(p: tuple[int, int, int], n: tuple[int, int, int]) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+            x, y, z = p
+            nx, ny, nz = n
+            if axis == "R":
+                return (x, -z, y), (nx, -nz, ny)
+            if axis == "L":
+                return (x, z, -y), (nx, nz, -ny)
+            if axis == "U":
+                return (z, y, -x), (nz, ny, -nx)
+            if axis == "D":
+                return (-z, y, x), (-nz, ny, nx)
+            if axis == "F":
+                return (-y, x, z), (-ny, nx, nz)
+            if axis == "B":
+                return (y, -x, z), (ny, -nx, nz)
+            raise ValueError(axis)
+        p, n = pos, normal
+        for _ in range(abs(step)):
+            p, n = rotate_once(p, n)
+        return p, n
+
 
 @dataclass
 class RubiksGlyphCube:
