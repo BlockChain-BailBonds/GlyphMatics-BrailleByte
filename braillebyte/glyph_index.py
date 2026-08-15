@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from hashlib import sha256
+import json
+from pathlib import Path
 from typing import Iterable, Sequence
 
 
@@ -73,3 +75,58 @@ class GlyphChunkIndex:
         if chunk is None:
             return False
         return sha256(payload).hexdigest() == chunk.digest
+
+    def dedupe_candidates(self) -> tuple[tuple[str, ...], ...]:
+        seen: dict[tuple[str, int, int], tuple[str, ...]] = {}
+        ordered: list[tuple[str, ...]] = []
+        for chunk in self.chunks:
+            key = (chunk.digest, chunk.length, chunk.offset)
+            if key in seen:
+                continue
+            routes = (chunk.chunk_id,)
+            seen[key] = routes
+            ordered.append(routes)
+        return tuple(ordered)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "model_id": self.model_id,
+            "chunks": [
+                {
+                    "chunk_id": chunk.chunk_id,
+                    "path": chunk.path,
+                    "offset": chunk.offset,
+                    "length": chunk.length,
+                    "digest": chunk.digest,
+                }
+                for chunk in self.chunks
+            ],
+            "vocabulary": [
+                {
+                    "token_start": shard.token_start,
+                    "token_end": shard.token_end,
+                    "embed_chunk_id": shard.embed_chunk_id,
+                    "output_chunk_id": shard.output_chunk_id,
+                }
+                for shard in self.vocabulary
+            ],
+            "tensors": [
+                {
+                    "layer_index": route.layer_index,
+                    "tensor_name": route.tensor_name,
+                    "chunk_ids": list(route.chunk_ids),
+                }
+                for route in self.tensors
+            ],
+            "dedupe_candidates": [list(candidate) for candidate in self.dedupe_candidates()],
+        }
+
+    @classmethod
+    def from_file(cls, path: Path) -> "GlyphChunkIndex":
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return cls(
+            model_id=payload["model_id"],
+            chunks=tuple(ChunkRecord(**chunk) for chunk in payload.get("chunks", [])),
+            vocabulary=tuple(VocabularyShard(**shard) for shard in payload.get("vocabulary", [])),
+            tensors=tuple(TensorRoute(layer_index=item["layer_index"], tensor_name=item["tensor_name"], chunk_ids=tuple(item["chunk_ids"])) for item in payload.get("tensors", [])),
+        )
