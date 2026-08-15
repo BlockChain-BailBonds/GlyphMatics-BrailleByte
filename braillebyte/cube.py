@@ -52,15 +52,36 @@ class EdgeCubie:
     orientation: int
 
 
+@dataclass(frozen=True)
+class CornerPiece:
+    piece_id: str
+    position: str
+    orientation: int
+
+
+@dataclass(frozen=True)
+class EdgePiece:
+    piece_id: str
+    position: str
+    orientation: int
+
+
 @dataclass
 class RubiksGlyphCube:
     facelets: dict[str, Facelet]
+    corners: tuple[CornerPiece, ...] = field(default_factory=tuple)
+    edges: tuple[EdgePiece, ...] = field(default_factory=tuple)
     history: list[str] = field(default_factory=list)
 
     @classmethod
     def solved(cls) -> "RubiksGlyphCube":
         facelets = {name: Facelet(name=name, payload=b"", semantic_frame={"face": FACELET_TO_FACE[name], "position": name}) for name in FACELET_ORDER}
-        return cls(facelets=facelets)
+        corners = tuple(CornerPiece(piece_id=name, position=name, orientation=0) for name in ("front:00", "front:02", "front:20", "front:22", "back:00", "back:02", "back:20", "back:22"))
+        edges = tuple(EdgePiece(piece_id=name, position=name, orientation=0) for name in (
+            "front:01", "front:10", "front:12", "front:21", "back:01", "back:10", "back:12", "back:21",
+            "top:10", "top:12", "bottom:10", "bottom:12",
+        ))
+        return cls(facelets=facelets, corners=corners, edges=edges)
 
     def validate(self) -> None:
         missing = [name for name in FACELET_ORDER if name not in self.facelets]
@@ -73,6 +94,7 @@ class RubiksGlyphCube:
             seen.add(name)
             self._validate_facelet_orientation(name, self.facelets[name])
         self.cubie_state()
+        self.piece_state()
 
     def _validate_facelet_orientation(self, name: str, facelet: Facelet) -> None:
         expected = self._state_to_name(*self._sticker_state(name))
@@ -138,6 +160,19 @@ class RubiksGlyphCube:
             raise ValueError("invalid cubie state")
         return {"corners": corners, "edges": edges}
 
+    def piece_state(self) -> dict[str, tuple[CornerPiece, ...] | tuple[EdgePiece, ...]]:
+        if len(self.corners) != 8 or len(self.edges) != 12:
+            raise ValueError("invalid piece inventory")
+        if len({piece.position for piece in self.corners}) != len(self.corners):
+            raise ValueError("corner position collision")
+        if len({piece.position for piece in self.edges}) != len(self.edges):
+            raise ValueError("edge position collision")
+        if sum(piece.orientation for piece in self.corners) % 3 != 0:
+            raise ValueError("corner orientation parity violation")
+        if sum(piece.orientation for piece in self.edges) % 2 != 0:
+            raise ValueError("edge orientation parity violation")
+        return {"corners": self.corners, "edges": self.edges}
+
     def _other_corner_stickers(self, name: str) -> tuple[str, str]:
         face, rc = name.split(":", 1)
         if face in {"front", "back"}:
@@ -170,7 +205,9 @@ class RubiksGlyphCube:
                 payload=facelet.payload,
                 semantic_frame=dict(facelet.semantic_frame),
             )
-        return RubiksGlyphCube(facelets=transformed, history=history)
+        corners = tuple(self._rotate_corner(piece, step, axis) for piece in self.corners)
+        edges = tuple(self._rotate_edge(piece, step, axis) for piece in self.edges)
+        return RubiksGlyphCube(facelets=transformed, corners=corners, edges=edges, history=history)
 
     def apply(self, turns: list[str]) -> "RubiksGlyphCube":
         cube = self
@@ -248,6 +285,21 @@ class RubiksGlyphCube:
             p, n = rotate_once(p, n)
         return p, n
 
+    def _rotate_corner(self, piece: CornerPiece, step: int, axis: str) -> CornerPiece:
+        orientation = (piece.orientation + (1 if axis in {"R", "L", "F", "B"} and step > 0 else 2 if axis in {"R", "L", "F", "B"} and step < 0 else 0)) % 3
+        position = self._rotate_piece_position(piece.position, axis, step)
+        return CornerPiece(piece_id=piece.piece_id, position=position, orientation=orientation)
+
+    def _rotate_edge(self, piece: EdgePiece, step: int, axis: str) -> EdgePiece:
+        orientation = (piece.orientation + (1 if axis in {"F", "B"} and step > 0 else 1 if axis in {"F", "B"} and step < 0 else 0)) % 2
+        position = self._rotate_piece_position(piece.position, axis, step)
+        return EdgePiece(piece_id=piece.piece_id, position=position, orientation=orientation)
+
+    def _rotate_piece_position(self, position: str, axis: str, step: int) -> str:
+        pos, normal = self._sticker_state(position)
+        pos, normal = self._rotate_state(axis, pos, normal, step)
+        return self._state_to_name(pos, normal)
+
     def semantic_summary(self) -> dict[str, Any]:
         return {name: self.facelets[name].semantic_frame for name in FACELET_ORDER}
 
@@ -262,6 +314,7 @@ class RubiksGlyphCube:
 
     @classmethod
     def from_legacy_faces(cls, faces: dict[str, GlyphCubeFace]) -> "RubiksGlyphCube":
+        base = cls.solved()
         facelets: dict[str, Facelet] = {}
         for face in FACE_ORDER:
             source = faces[face]
@@ -270,7 +323,7 @@ class RubiksGlyphCube:
                     name = f"{face}:{row}{col}"
                     payload = source.payload[:1] if source.payload else b""
                     facelets[name] = Facelet(name=name, payload=payload, semantic_frame=dict(source.semantic_frame))
-        return cls(facelets=facelets)
+        return cls(facelets=facelets, corners=base.corners, edges=base.edges)
 
     def to_bytes(self) -> bytes:
         self.validate()
