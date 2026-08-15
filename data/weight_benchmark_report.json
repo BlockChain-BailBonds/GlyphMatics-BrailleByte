@@ -1,0 +1,33 @@
+{
+  "format": "GlyphMatics Weight Compression Benchmark",
+  "chunk_size": 1048576,
+  "bundle_bytes": 20727086,
+  "bundle_gzip_bytes": 19040743,
+  "bundle_zstd_bytes": 19065937,
+  "bundle_gzip_ratio": 1.0885,
+  "bundle_zstd_ratio": 1.087,
+  "results": [
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/BlockChain-BailBonds_GlyphMatics-BrailleByte-LLM/training/creation_chat/latest.pt",
+      "input_bytes": 10362686,
+      "chunk_bytes": 20727086,
+      "gzip_bytes": 9476664,
+      "zstd_bytes": 9490986,
+      "chunk_ratio": 0.5,
+      "gzip_ratio": 1.0935,
+      "zstd_ratio": 1.0918,
+      "round_trip": true
+    },
+    {
+      "path": "/data/data/com.termux/files/home/.local/share/Trash/files/glyphmatics_owned_repo_checkouts/BlockChain-BailBonds_GlyphMatics-BrailleByte-LLM/training/human_creation_chat/latest.pt",
+      "input_bytes": 10362558,
+      "chunk_bytes": 20727086,
+      "gzip_bytes": 9566235,
+      "zstd_bytes": 9578869,
+      "chunk_ratio": 0.5,
+      "gzip_ratio": 1.0832,
+      "zstd_ratio": 1.0818,
+      "round_trip": true
+    }
+  ]
+}
