@@ -5,13 +5,16 @@ from typing import Any
 
 
 FACE_ORDER = ("front", "right", "left", "top", "bottom", "back")
+# Wire tags stay byte-sized so the cube payload stays compact and reversible.
+FACE_TAGS = {face: index for index, face in enumerate(FACE_ORDER)}
+FACE_BACK = {value: key for key, value in FACE_TAGS.items()}
 FRAME_KEYS = {
-    "role": 1,
-    "domain": 2,
-    "state": 3,
-    "confidence": 4,
-    "kind": 5,
-    "label": 6,
+    "role": 0x11,
+    "domain": 0x10,
+    "state": 0x38,
+    "confidence": 0x40,
+    "kind": 0x01,
+    "label": 0x02,
 }
 FRAME_BACK = {value: key for key, value in FRAME_KEYS.items()}
 VALUE_TAGS = {"str": 1, "int": 2, "float": 3, "bool": 4, "null": 5}
@@ -80,6 +83,7 @@ class GlyphCube:
         out = bytearray()
         out.extend(b"GCB1")
         for face in FACE_ORDER:
+            out.append(FACE_TAGS[face] & 0xFF)
             payload = self.faces[face].payload
             frame = self._encode_frame(self.faces[face].semantic_frame)
             out.extend(self._pack_u16(len(payload)))
@@ -98,6 +102,10 @@ class GlyphCube:
         pos = 4
         faces: dict[str, GlyphCubeFace] = {}
         for face in FACE_ORDER:
+            face_tag = data[pos]
+            pos += 1
+            if FACE_BACK.get(face_tag) != face:
+                raise ValueError("cube face order mismatch")
             payload_len = int.from_bytes(data[pos:pos + 2], "big")
             pos += 2
             payload = data[pos:pos + payload_len]
