@@ -57,6 +57,21 @@ class GlyphChunkIndexTests(unittest.TestCase):
         self.assertEqual(restored.reconstruction_order, ('embed', 'output', 'layer0'))
         self.assertTrue(manifest.verify({'embed': self.payload, 'output': b'chunk-b', 'layer0': b'chunk-c'}))
         self.assertFalse(manifest.verify({'embed': b'bad'}))
+        layout = manifest.reconstruction_layout()
+        self.assertEqual(layout['tensor_order'], ['attention'])
+        self.assertEqual(layout['shard_groups']['embedding'], ['embed'])
+        self.assertEqual(layout['shard_groups']['output'], ['output'])
+        restored_layout = RubiksCheckpointManifest.from_layout(
+            {
+                'model_id': 'test-model',
+                'architecture_id': 'arch-v1',
+                'tokenizer_id': 'tok-v1',
+                'quantization_scheme': 'q4',
+                'chunk_order': ['embed', 'output', 'layer0'],
+            },
+            self.index,
+        )
+        self.assertEqual(restored_layout.reconstruction_order, ('embed', 'output', 'layer0'))
 
 
 if __name__ == '__main__':

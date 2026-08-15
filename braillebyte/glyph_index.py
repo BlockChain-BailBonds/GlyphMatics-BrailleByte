@@ -64,6 +64,13 @@ class RubiksCheckpointManifest:
         }
 
     def to_cube_summary(self) -> dict[str, object]:
+        tensor_groups: dict[int, list[str]] = {}
+        for route in self.chunk_index.tensors:
+            tensor_groups.setdefault(route.layer_index, []).append(route.tensor_name)
+        shard_groups = {
+            "embedding": [shard.embed_chunk_id for shard in self.chunk_index.vocabulary],
+            "output": [shard.output_chunk_id for shard in self.chunk_index.vocabulary],
+        }
         return {
             "centers": {
                 "front": self.architecture_id,
@@ -75,6 +82,8 @@ class RubiksCheckpointManifest:
             },
             "edges": [route.tensor_name for route in self.chunk_index.tensors],
             "corners": [chunk.chunk_id for chunk in self.chunk_index.chunks[:8]],
+            "tensor_groups": tensor_groups,
+            "shard_groups": shard_groups,
             "reconstruction_order": list(self.reconstruction_order or tuple(chunk.chunk_id for chunk in self.chunk_index.chunks)),
         }
 
@@ -111,6 +120,27 @@ class RubiksCheckpointManifest:
             quantization_scheme=summary["left"].get("label", "unknown"),
             chunk_index=chunk_index,
             reconstruction_order=tuple(chunk.chunk_id for chunk in chunk_index.chunks),
+        )
+
+    def reconstruction_layout(self) -> dict[str, object]:
+        summary = self.to_cube_summary()
+        return {
+            "model_id": self.model_id,
+            "tensor_order": [route.tensor_name for route in self.chunk_index.tensors],
+            "tensor_groups": summary["tensor_groups"],
+            "shard_groups": summary["shard_groups"],
+            "chunk_order": list(self.reconstruction_order or tuple(chunk.chunk_id for chunk in self.chunk_index.chunks)),
+        }
+
+    @classmethod
+    def from_layout(cls, layout: dict[str, object], chunk_index: GlyphChunkIndex) -> "RubiksCheckpointManifest":
+        return cls(
+            model_id=str(layout.get("model_id", chunk_index.model_id)),
+            architecture_id=str(layout.get("architecture_id", chunk_index.model_id)),
+            tokenizer_id=str(layout.get("tokenizer_id", "unknown")),
+            quantization_scheme=str(layout.get("quantization_scheme", "unknown")),
+            chunk_index=chunk_index,
+            reconstruction_order=tuple(layout.get("chunk_order", [chunk.chunk_id for chunk in chunk_index.chunks])),
         )
 
     def verify(self, payloads: dict[str, bytes]) -> bool:
